@@ -10,7 +10,7 @@ from dp_wizard_templates.converters import (
 )
 
 
-fixtures_path = Path(__file__).parent.parent / "fixtures"
+fixtures_path = Path(__file__).parent / "fixtures"
 
 
 def norm_nb(nb_str):
