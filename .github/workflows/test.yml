@@ -36,8 +36,5 @@ jobs:
       - name: Install dev dependencies
         run: pip install -r ${{ matrix.requirements-file }}
 
-      - name: Silence Jupyter warnings
-        run: export JUPYTER_PLATFORM_DIRS=1; jupyter --paths
-
       - name: Test
         run: scripts/ci.sh
