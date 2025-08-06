@@ -68,7 +68,7 @@ def convert_py_to_nb(python_str: str, title: str, execute: bool = False):
 def _clean_nb(nb_json: str):
     """
     Given a notebook as a string of JSON, remove the coda and pip output.
-    (The code produces reports that we do need,
+    (The code may produce reports that we do need,
     but the code isn't actually interesting to end users.)
     """
     nb = json.loads(nb_json)
@@ -78,6 +78,13 @@ def _clean_nb(nb_json: str):
             cell["outputs"] = []
         if "# Coda\n" in cell["source"]:
             break
+        # Make ID stable:
+        cell["id"] = hex(hash('\n'.join(cell["source"])))[-8:]
+        # Delete execution metadata:
+        try:
+            del cell["metadata"]["execution"]
+        except KeyError:
+            pass
         new_cells.append(cell)
     nb["cells"] = new_cells
     return json.dumps(nb, indent=1)
