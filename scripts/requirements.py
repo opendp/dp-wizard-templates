@@ -33,7 +33,8 @@ def pip_compile_install(file_name):  # pragma: no cover
     # sed doesn't have exactly the same options on all platforms,
     # but this is good enough for now.
     echo_check_call(
-        f"sed -i '' 's:/.*/dp-wizard-templates/:.../dp-wizard-templates/:' {txt_file_name}"
+        "sed -i '' 's:/.*/dp-wizard-templates/:.../dp-wizard-templates/:'"
+        f" {txt_file_name}"
     )
 
 
@@ -76,7 +77,7 @@ def get_new_pyproject_toml():
     """
     cwd_root()
     pyproject = parse(Path("pyproject.toml").read_text())
-    pyproject["project"]["dependencies"] = to_toml_array("requirements.in")
+    pyproject["project"]["dependencies"] = to_toml_array("requirements.in")  # type: ignore
     return dumps(pyproject)
 
 

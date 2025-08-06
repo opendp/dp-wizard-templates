@@ -5,8 +5,8 @@
 DP Wizard Templates lets you use syntactically valid Python code as a template.
 Templates can be filled and composed to generate entire notebooks.
 
-[`README_test.py`](README_test.py) provides an example of use,
-and an example [output notebook](README_examples/hello-world.ipynb)
+[`README_test.py`](https://github.com/opendp/dp-wizard-templates/blob/main/README_test.py) provides an example of use,
+and an example [output notebook](https://github.com/opendp/dp-wizard-templates/blob/main/README_examples/hello-world.ipynb)
 is also available.
 
 DP Wizard Templates was developed for [DP Wizard](https://github.com/opendp/dp-wizard),
