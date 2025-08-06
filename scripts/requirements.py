@@ -77,7 +77,7 @@ def get_new_pyproject_toml():
     """
     cwd_root()
     pyproject = parse(Path("pyproject.toml").read_text())
-    pyproject["project"]["dependencies"] = to_toml_array("requirements.in")
+    pyproject["project"]["dependencies"] = to_toml_array("requirements.in")  # type: ignore
     return dumps(pyproject)
 
 

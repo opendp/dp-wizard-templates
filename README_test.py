@@ -1,3 +1,4 @@
+# pyright: reportUnusedExpression=false
 """
 DP Wizard Templates relies on code inspection, so real working examples
 need to be in code. This file provides some motivation for the library,
