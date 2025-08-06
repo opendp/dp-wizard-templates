@@ -65,6 +65,10 @@ def convert_py_to_nb(python_str: str, title: str, execute: bool = False):
     return _clean_nb(json.dumps(nb_dict))
 
 
+def _stable_hash(lines: list[str]):
+    import hashlib
+    return hashlib.sha1('\n'.join(lines).encode()).hexdigest()[:8]
+
 def _clean_nb(nb_json: str):
     """
     Given a notebook as a string of JSON, remove the coda and pip output.
@@ -79,7 +83,7 @@ def _clean_nb(nb_json: str):
         if "# Coda\n" in cell["source"]:
             break
         # Make ID stable:
-        cell["id"] = hex(hash('\n'.join(cell["source"])))[-8:]
+        cell["id"] = _stable_hash(cell["source"])
         # Delete execution metadata:
         try:
             del cell["metadata"]["execution"]
