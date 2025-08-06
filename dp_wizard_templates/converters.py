@@ -67,7 +67,9 @@ def convert_py_to_nb(python_str: str, title: str, execute: bool = False):
 
 def _stable_hash(lines: list[str]):
     import hashlib
-    return hashlib.sha1('\n'.join(lines).encode()).hexdigest()[:8]
+
+    return hashlib.sha1("\n".join(lines).encode()).hexdigest()[:8]
+
 
 def _clean_nb(nb_json: str):
     """

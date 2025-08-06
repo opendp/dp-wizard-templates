@@ -52,7 +52,7 @@ can be parsed, they should not be imported or executed as-is.)
 
 from pathlib import Path
 
-root = Path(__file__).parent / 'README_examples'
+root = Path(__file__).parent / "README_examples"
 
 block_demo = (
     Template("block_demo", root=root)
@@ -77,7 +77,10 @@ Finally, plain strings can also be used for templates.
 """
 
 assignment = (
-    Template("VAR = NAME * 2").fill_expressions(VAR='band').fill_values(NAME="Duran").finish()
+    Template("VAR = NAME * 2")
+    .fill_expressions(VAR="band")
+    .fill_values(NAME="Duran")
+    .finish()
 )
 
 assert assignment == "band = 'Duran' * 2"
@@ -99,6 +102,7 @@ to have produce other artifacts without adding clutter.
 
 from dp_wizard_templates.converters import convert_py_to_nb, convert_nb_to_html
 
+
 def notebook_template(TITLE, BLOCK, FUNCTION_NAME):
     # # TITLE
     #
@@ -118,11 +122,17 @@ def notebook_template(TITLE, BLOCK, FUNCTION_NAME):
 
     2 + 2
 
+
 title = "Hello World!"
-notebook_py = Template(notebook_template).fill_blocks(BLOCK=block_demo).fill_expressions(FUNCTION_NAME="freeze_warning", TITLE=title).finish()
+notebook_py = (
+    Template(notebook_template)
+    .fill_blocks(BLOCK=block_demo)
+    .fill_expressions(FUNCTION_NAME="freeze_warning", TITLE=title)
+    .finish()
+)
 
 notebook_ipynb = convert_py_to_nb(notebook_py, title=title, execute=True)
-(root / 'hello-world.ipynb').write_text(notebook_ipynb)
+(root / "hello-world.ipynb").write_text(notebook_ipynb)
 
 notebook_html = convert_nb_to_html(notebook_ipynb)
-(root / 'hello-world.html').write_text(notebook_html)
+(root / "hello-world.html").write_text(notebook_html)

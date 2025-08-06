@@ -33,7 +33,8 @@ def pip_compile_install(file_name):  # pragma: no cover
     # sed doesn't have exactly the same options on all platforms,
     # but this is good enough for now.
     echo_check_call(
-        f"sed -i '' 's:/.*/dp-wizard-templates/:.../dp-wizard-templates/:' {txt_file_name}"
+        "sed -i '' 's:/.*/dp-wizard-templates/:.../dp-wizard-templates/:'"
+        f" {txt_file_name}"
     )
 
 
