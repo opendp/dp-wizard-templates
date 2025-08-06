@@ -27,12 +27,10 @@ def _get_body(func):
 
 
 class Template:
-    def __init__(self, template, root=__file__):
-        # TODO: Check if template is a Path, eventually.
-        # Don't want to introduce a lot of changes right now.
-        template_name = f"_{template}.py"
-        template_path = Path(root).parent / "no-tests" / template_name
-        if template_path.exists():
+    def __init__(self, template, root=None):
+        if root is not None:
+            template_name = f"_{template}.py"
+            template_path = root / template_name
             self._source = f"'{template_name}'"
             self._template = template_path.read_text()
         else:
