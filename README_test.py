@@ -32,7 +32,7 @@ conditional_print = (
     .finish()
 )
 
-assert conditional_print == "if temp_c < 0:\nprint('It is freezing!')"
+assert conditional_print == "if temp_c < 0:\n    print('It is freezing!')"
 
 """
 Note the different methods used:
@@ -52,8 +52,10 @@ can be parsed, they should not be imported or executed as-is.)
 
 from pathlib import Path
 
+root = Path(__file__).parent / 'README_examples'
+
 block_demo = (
-    Template("block_demo", root=Path(__file__).parent)
+    Template("block_demo", root=root)
     .fill_expressions(FUNCTION_NAME="freeze_warning", PARAMS="temp_c")
     .fill_blocks(INNER_BLOCK=conditional_print)
     .finish()
@@ -66,6 +68,61 @@ assert (
     This demonstrates how larger blocks of code can be built compositionally.
     """
     if temp_c < 0:
-    print('It is freezing!')
+        print('It is freezing!')
 '''
 )
+
+"""
+Finally, plain strings can also be used for templates.
+"""
+
+assignment = (
+    Template("VAR = NAME * 2").fill_expressions(VAR='band').fill_values(NAME="Duran").finish()
+)
+
+assert assignment == "band = 'Duran' * 2"
+
+"""
+DP Wizard Templates also includes utilities to convert python code
+to notebooks, and to convert notebooks to HTML. It is a thin wrapper
+which provides default settings for `nbconvert` and `jupytext`.
+
+The python code is converted to a notebook using the jupytext light format:
+https://jupytext.readthedocs.io/en/latest/formats-scripts.html#the-light-format
+Contiguous comments are coverted to markdown cells,
+and contiguous lines of code are converted to code cells.
+
+One additional feature is that a section with a "# Coda" header
+will be stripped from notebook output. This allows a notebook
+to have produce other artifacts without adding clutter.
+"""
+
+from dp_wizard_templates.converters import convert_py_to_nb, convert_nb_to_html
+
+def notebook_template(TITLE, BLOCK, FUNCTION_NAME):
+    # # TITLE
+    #
+    # Comments will be rendered as *Markdown*.
+    # The + and - below ensure that only one cell is produced,
+    # even though the lines are not contiguous
+
+    # +
+    BLOCK
+
+    FUNCTION_NAME(-10)
+    # -
+
+    # # Coda
+    #
+    # Extra computations that will not be rendered.
+
+    2 + 2
+
+title = "Hello World!"
+notebook_py = Template(notebook_template).fill_blocks(BLOCK=block_demo).fill_expressions(FUNCTION_NAME="freeze_warning", TITLE=title).finish()
+
+notebook_ipynb = convert_py_to_nb(notebook_py, title=title, execute=True)
+(root / 'hello-world.ipynb').write_text(notebook_ipynb)
+
+notebook_html = convert_nb_to_html(notebook_ipynb)
+(root / 'hello-world.html').write_text(notebook_html)
