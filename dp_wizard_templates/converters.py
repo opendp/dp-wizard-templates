@@ -7,6 +7,7 @@ import json
 import nbformat
 import nbconvert
 import jupytext
+import black
 
 
 def _is_kernel_installed() -> bool:
@@ -27,7 +28,9 @@ class ConversionException(Exception):
         return f"Script to notebook conversion failed: {self.command}\n{self.stderr})"
 
 
-def convert_py_to_nb(python_str: str, title: str, execute: bool = False):
+def convert_py_to_nb(
+    python_str: str, title: str, execute: bool = False, reformat: bool = True
+):
     """
     Given Python code as a string, returns a notebook as a string.
     Calls jupytext as a subprocess:
@@ -43,6 +46,9 @@ def convert_py_to_nb(python_str: str, title: str, execute: bool = False):
 
         temp_dir_path = Path(temp_dir)
         py_path = temp_dir_path / "input.py"
+        if reformat:
+            # Line length determined by PDF rendering.
+            python_str = black.format_str(python_str, mode=black.Mode(line_length=74))
         py_path.write_text(python_str)
 
         argv = [executable] + "-m jupytext --from .py --to .ipynb --output -".split(" ")
