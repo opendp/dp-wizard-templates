@@ -58,7 +58,7 @@ assert conditional_print == "if temp_c < 0:\n    print('It is freezing!')"
 # - `fill_expressions()` fills the slot with verbatim text.
 #   It can be used for an expression like this, or for variable names.
 # - `fill_values()` fills the slot with the repr of the provided value.
-#   This might be a string, or it might be a array or dict or other
+#   This might be a string, or it might be a list or dict or other
 #   data structure, as long as it has a usable repr.
 # - `finish()` converts the template to a string, and will error
 #   if not all slots have been filled.
