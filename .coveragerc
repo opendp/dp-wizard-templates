@@ -6,7 +6,7 @@ source = .
 # TODO: branch = True
 
 omit =
-  README_examples/*
+  examples/*
 
 
 [report]
