@@ -58,7 +58,7 @@ assert conditional_print == "if temp_c < 0:\n    print('It is freezing!')"
 # - `fill_expressions()` fills the slot with verbatim text.
 #   It can be used for an expression like this, or for variable names.
 # - `fill_values()` fills the slot with the repr of the provided value.
-#   This might be a string, or it might be a array or dict or other
+#   This might be a string, or it might be a list or dict or other
 #   data structure, as long as it has a usable repr.
 # - `finish()` converts the template to a string, and will error
 #   if not all slots have been filled.
@@ -72,10 +72,10 @@ assert conditional_print == "if temp_c < 0:\n    print('It is freezing!')"
 
 from pathlib import Path
 
-root = Path(__file__).parent / "README_examples"
+root = Path(__file__).parent.parent
 
 block_demo = (
-    Template("block_demo", root=root)
+    Template("block_demo", root=root / "examples")
     .fill_expressions(FUNCTION_NAME="freeze_warning", PARAMS="temp_c")
     .fill_blocks(INNER_BLOCK=conditional_print)
     .finish()
@@ -158,14 +158,14 @@ notebook_py = (
 )
 
 notebook_ipynb = convert_py_to_nb(notebook_py, title=title, execute=True)
-(root / "hello-world.ipynb").write_text(notebook_ipynb)
+(root / "examples" / "hello-world.ipynb").write_text(notebook_ipynb)
 
 notebook_html = convert_nb_to_html(notebook_ipynb)
-(root / "hello-world.html").write_text(notebook_html)
+(root / "examples" / "hello-world.html").write_text(notebook_html)
 
 # -
 
-# The [output](README_examples/hello-world.html) is short,
+# The [output](examples/hello-world.html) is short,
 # but it is an end-to-end demonstration of DP Wizard Templates,
 # and as noted at the top, this documentation itself is rendered with
 # `convert_py_to_nb` and `convert_nb_to_html`.
@@ -188,11 +188,9 @@ notebook_html = convert_nb_to_html(notebook_ipynb)
 
 # +
 
-from pathlib import Path
-
 readme_test_py = Path(__file__).read_text()
 
-html_path = Path(__file__).parent / "index.html"
+html_path = root / "index.html"
 before_hash = hash(html_path.read_text())
 
 html = convert_nb_to_html(
