@@ -88,7 +88,9 @@ def _clean_nb(nb_json: str):
     for cell in nb["cells"]:
         if "pip install" in cell["source"][0]:
             cell["outputs"] = []
-        if "# Coda" in cell["source"]:
+        # "Coda" may, or may not be followed by "\n".
+        # Be flexible!
+        if any(line.startswith("# Coda") for line in cell["source"]):
             break
         # Make ID stable:
         cell["id"] = _stable_hash(cell["source"])

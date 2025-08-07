@@ -10,7 +10,8 @@
 # need to be in code, not in a notebook or a doctest.
 # This documentation itself is rendered by the library.
 #
-# DP Wizard Templates was developed for [DP Wizard](https://github.com/opendp/dp-wizard),
+# DP Wizard Templates was developed for
+# [DP Wizard](https://github.com/opendp/dp-wizard),
 # and that codebase remains a good place to look for further examples.
 #
 #
@@ -114,7 +115,8 @@ assert assignment == "band = 'Duran' * 2"
 # to notebooks, and to convert notebooks to HTML. It is a thin wrapper
 # which provides default settings for `nbconvert` and `jupytext`.
 #
-# The Python code is converted to a notebook using the [jupytext light format](https://jupytext.readthedocs.io/en/latest/formats-scripts.html#the-light-format):
+# The Python code is converted to a notebook using the
+# [jupytext light format](https://jupytext.readthedocs.io/en/latest/formats-scripts.html#the-light-format):
 # Contiguous comments are coverted to markdown cells,
 # and contiguous lines of code are converted to code cells.
 #

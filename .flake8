@@ -10,5 +10,6 @@ extend-ignore = E203,E501,E701
 per-file-ignores =
     # Ignore undefined names in templates.
     README_examples/*.py:F821,F401,E302
-    # Ignore mid-file imports: These are better for exaplanation.
-    README_test.py:E402
+    # Ignore mid-file imports: These make for a better exposition.
+    # Ignore lines that too long. Mostly URLs.
+    README_test.py:E402,B950
