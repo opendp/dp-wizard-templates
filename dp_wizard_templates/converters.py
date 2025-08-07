@@ -7,6 +7,7 @@ import json
 import nbformat
 import nbconvert
 import jupytext
+import black
 
 
 def _is_kernel_installed() -> bool:
@@ -27,7 +28,9 @@ class ConversionException(Exception):
         return f"Script to notebook conversion failed: {self.command}\n{self.stderr})"
 
 
-def convert_py_to_nb(python_str: str, title: str, execute: bool = False):
+def convert_py_to_nb(
+    python_str: str, title: str, execute: bool = False, reformat: bool = True
+):
     """
     Given Python code as a string, returns a notebook as a string.
     Calls jupytext as a subprocess:
@@ -43,6 +46,9 @@ def convert_py_to_nb(python_str: str, title: str, execute: bool = False):
 
         temp_dir_path = Path(temp_dir)
         py_path = temp_dir_path / "input.py"
+        if reformat:
+            # Line length determined by PDF rendering.
+            python_str = black.format_str(python_str, mode=black.Mode(line_length=74))
         py_path.write_text(python_str)
 
         argv = [executable] + "-m jupytext --from .py --to .ipynb --output -".split(" ")
@@ -82,7 +88,9 @@ def _clean_nb(nb_json: str):
     for cell in nb["cells"]:
         if "pip install" in cell["source"][0]:
             cell["outputs"] = []
-        if "# Coda\n" in cell["source"]:
+        # "Coda" may, or may not be followed by "\n".
+        # Be flexible!
+        if any(line.startswith("# Coda") for line in cell["source"]):
             break
         # Make ID stable:
         cell["id"] = _stable_hash(cell["source"])
@@ -96,13 +104,9 @@ def _clean_nb(nb_json: str):
     return json.dumps(nb, indent=1)
 
 
-def convert_nb_to_html(python_nb: str):
-    return _convert_nb(python_nb, nbconvert.HTMLExporter)
-
-
-def _convert_nb(python_nb: str, exporter_constructor):
+def convert_nb_to_html(python_nb: str, numbered=True):
     notebook = nbformat.reads(python_nb, as_version=4)
-    exporter = exporter_constructor(
+    exporter = nbconvert.HTMLExporter(
         template_name="lab",
         # The "classic" template's CSS forces large code cells on to
         # the next page rather than breaking, so use "lab" instead.
@@ -116,4 +120,13 @@ def _convert_nb(python_nb: str, exporter_constructor):
         # ],
     )
     (body, _resources) = exporter.from_notebook_node(notebook)
+    if not numbered:
+        body = body.replace(
+            "</head>",
+            """
+<style>
+.jp-InputPrompt {display: none;}
+</style>
+</head>""",
+        )
     return body

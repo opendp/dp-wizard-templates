@@ -1,9 +1,9 @@
+import inspect
 import re
+import black
 
 
 def _get_body(func):
-    import inspect
-    import re
 
     source_lines = inspect.getsource(func).splitlines()
     first_line = source_lines[0]
@@ -116,7 +116,7 @@ class Template:
                 raise Exception(base_message)
         return self
 
-    def finish(self) -> str:
+    def finish(self, reformat=False) -> str:
         unfilled_slots = self._initial_slots & self._find_slots()
         if unfilled_slots:
             slots_str = ", ".join(sorted(f"'{slot}'" for slot in unfilled_slots))
@@ -124,4 +124,8 @@ class Template:
                 f"{slots_str} slot not filled "
                 f"in {self._source}:\n\n{self._template}"
             )
+
+        if reformat:
+            self._template = black.format_str(self._template, mode=black.Mode())
+
         return self._template

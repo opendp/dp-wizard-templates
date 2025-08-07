@@ -63,7 +63,7 @@ def test_convert_py_to_nb_error():
         # the line with the error shows up in the message.
         match=(r"Invalid python!"),
     ):
-        convert_py_to_nb(python_str, "Title!", execute=True)
+        convert_py_to_nb(python_str, "Title!", execute=True, reformat=False)
 
 
 def test_convert_nb_to_html():
