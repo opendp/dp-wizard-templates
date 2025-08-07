@@ -88,7 +88,7 @@ def _clean_nb(nb_json: str):
     for cell in nb["cells"]:
         if "pip install" in cell["source"][0]:
             cell["outputs"] = []
-        if "# Coda\n" in cell["source"]:
+        if "# Coda" in cell["source"]:
             break
         # Make ID stable:
         cell["id"] = _stable_hash(cell["source"])
@@ -102,13 +102,9 @@ def _clean_nb(nb_json: str):
     return json.dumps(nb, indent=1)
 
 
-def convert_nb_to_html(python_nb: str):
-    return _convert_nb(python_nb, nbconvert.HTMLExporter)
-
-
-def _convert_nb(python_nb: str, exporter_constructor):
+def convert_nb_to_html(python_nb: str, numbered=True):
     notebook = nbformat.reads(python_nb, as_version=4)
-    exporter = exporter_constructor(
+    exporter = nbconvert.HTMLExporter(
         template_name="lab",
         # The "classic" template's CSS forces large code cells on to
         # the next page rather than breaking, so use "lab" instead.
@@ -122,4 +118,13 @@ def _convert_nb(python_nb: str, exporter_constructor):
         # ],
     )
     (body, _resources) = exporter.from_notebook_node(notebook)
+    if not numbered:
+        body = body.replace(
+            "</head>",
+            """
+<style>
+.jp-InputPrompt {display: none;}
+</style>
+</head>""",
+        )
     return body

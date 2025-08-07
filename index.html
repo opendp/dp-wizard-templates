@@ -3,7 +3,7 @@
 <html lang="en">
 <head><meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Hello World!</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>DP Wizard Templates</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <style type="text/css">
     pre { line-height: 125%; }
 td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
@@ -7508,90 +7508,254 @@ a.anchor-link {
     white-space: normal;
   }
 </style>
-<!-- End of mermaid configuration --></head>
+<!-- End of mermaid configuration -->
+<style>
+.jp-InputPrompt {display: none;}
+</style>
+</head>
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
 <main>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=6fc59e52">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=7911ebc0">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="Hello-World!">Hello World!<a class="anchor-link" href="#Hello-World!">¶</a></h1><p>Comments will be rendered as <em>Markdown</em>.
-The <code>+</code> and <code>-</code> below ensure that only one code cell is produced,
-even though the lines are not contiguous</p>
+<h1 id="DP-Wizard-Templates">DP Wizard Templates<a class="anchor-link" href="#DP-Wizard-Templates">¶</a></h1><p><a href="https://github.com/opendp/dp-wizard-templates">github</a> | <a href="https://pypi.org/project/dp_wizard_templates/">pypi</a> | <a href="https://opendp.github.io/dp-wizard-templates">docs</a> (this page)</p>
+<p>DP Wizard Templates helps you build Python code from templates
+which are themselves syntactically valid Python.
+Templates can be composed to generate entire notebooks.</p>
+<p>DP Wizard Templates relies on code inspection, so real working examples
+need to be in code, not in a notebook or a doctest.
+This documentation itself is rendered by the library.</p>
+<p>DP Wizard Templates was developed for <a href="https://github.com/opendp/dp-wizard">DP Wizard</a>,
+and that codebase remains a good place to look for further examples.</p>
+<h2 id="Motivation">Motivation<a class="anchor-link" href="#Motivation">¶</a></h2><p>Let's say you want to generate Python code programmatically,
+perhaps to demonstrate a workflow with parameters supplied by the user.
+One approach would be to use a templating system like Jinja,
+but this may be hard to maintain: The template itself is not Python,
+so syntax problems will not be obvious until it is filled in.
+At the other extreme, constructing code via an AST is very low-level.</p>
+<p>DP Wizard Templates is an alternative. The templates are themselves Python code,
+and the slots to fill are all-caps. This convention means that the template
+itself can be parsed as Python code, so syntax highlighting and linting still works.</p>
+<h2 id="Examples:-dp_wizard_templates.code_template">Examples: <code>dp_wizard_templates.code_template</code><a class="anchor-link" href="#Examples:-dp_wizard_templates.code_template">¶</a></h2><p>There are two modules in this library. We'll look at <code>code_template</code> first.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=bbe7eb3d">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=62140d41">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">freeze_warning</span><span class="p">(</span><span class="n">temp_c</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    This demonstrates how larger blocks of code can be built compositionally.</span>
-<span class="sd">    """</span>
-    <span class="k">if</span> <span class="n">temp_c</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">"It is freezing!"</span><span class="p">)</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dp_wizard_templates.code_template</span><span class="w"> </span><span class="kn">import</span> <span class="n">Template</span>
 
 
-<span class="n">freeze_warning</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">conditional_print_template</span><span class="p">(</span><span class="n">CONDITION</span><span class="p">,</span> <span class="n">MESSAGE</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">CONDITION</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">MESSAGE</span><span class="p">)</span>
+
+
+<span class="n">conditional_print</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">Template</span><span class="p">(</span><span class="n">conditional_print_template</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">fill_expressions</span><span class="p">(</span><span class="n">CONDITION</span><span class="o">=</span><span class="s2">"temp_c &lt; 0"</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">fill_values</span><span class="p">(</span><span class="n">MESSAGE</span><span class="o">=</span><span class="s2">"It is freezing!"</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">finish</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="k">assert</span> <span class="n">conditional_print</span> <span class="o">==</span> <span class="s2">"if temp_c &lt; 0:</span><span class="se">\n</span><span class="s2">    print('It is freezing!')"</span>
 </pre></div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
 </div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>It is freezing!
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=14a075e4">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=0b13c331">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="Coda">Coda<a class="anchor-link" href="#Coda">¶</a></h1><p>Extra computations that will not be rendered.</p>
+<p>Note the different methods used:</p>
+<ul>
+<li><code>fill_expressions()</code> fills the slot with verbatim text.
+It can be used for an expression like this, or for variable names.</li>
+<li><code>fill_values()</code> fills the slot with the repr of the provided value.
+This might be a string, or it might be a array or dict or other
+data structure, as long as it has a usable repr.</li>
+<li><code>finish()</code> converts the template to a string, and will error
+if not all slots have been filled.</li>
+</ul>
+<p>Templates can also be in standalone files. If a <code>root</code> parameter is provided,
+the system will prepend <code>_</code> and append <code>.py</code> and look for a corresponding file.
+(The convention of prepending <code>_</code> reminds us that although these files
+can be parsed, they should not be imported or executed as-is.)</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=2b2744e9">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=c8310880">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="n">root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">"README_examples"</span>
+
+<span class="n">block_demo</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">Template</span><span class="p">(</span><span class="s2">"block_demo"</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">fill_expressions</span><span class="p">(</span><span class="n">FUNCTION_NAME</span><span class="o">=</span><span class="s2">"freeze_warning"</span><span class="p">,</span> <span class="n">PARAMS</span><span class="o">=</span><span class="s2">"temp_c"</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">fill_blocks</span><span class="p">(</span><span class="n">INNER_BLOCK</span><span class="o">=</span><span class="n">conditional_print</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">finish</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="k">assert</span> <span class="p">(</span>
+    <span class="n">block_demo</span>
+    <span class="o">==</span> <span class="s1">'''def freeze_warning(temp_c):</span>
+<span class="s1">    """</span>
+<span class="s1">    This demonstrates how larger blocks of code can be built compositionally.</span>
+<span class="s1">    """</span>
+<span class="s1">    if temp_c &lt; 0:</span>
+<span class="s1">        print('It is freezing!')</span>
+<span class="s1">'''</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
 </div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[2]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>4</pre>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=9f3ee5f8">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Finally, plain strings can also be used for templates.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=a9ea7426">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">assignment</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">Template</span><span class="p">(</span><span class="s2">"VAR = NAME * 2"</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">fill_expressions</span><span class="p">(</span><span class="n">VAR</span><span class="o">=</span><span class="s2">"band"</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">fill_values</span><span class="p">(</span><span class="n">NAME</span><span class="o">=</span><span class="s2">"Duran"</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">finish</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="k">assert</span> <span class="n">assignment</span> <span class="o">==</span> <span class="s2">"band = 'Duran' * 2"</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=87e15696">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="Examples:-dp_wizard_templates.converters">Examples: <code>dp_wizard_templates.converters</code><a class="anchor-link" href="#Examples:-dp_wizard_templates.converters">¶</a></h2><p>DP Wizard Templates also includes utilities to convert Python code
+to notebooks, and to convert notebooks to HTML. It is a thin wrapper
+which provides default settings for <code>nbconvert</code> and <code>jupytext</code>.</p>
+<p>The Python code is converted to a notebook using the <a href="https://jupytext.readthedocs.io/en/latest/formats-scripts.html#the-light-format">jupytext light format</a>:
+Contiguous comments are coverted to markdown cells,
+and contiguous lines of code are converted to code cells.</p>
+<p>One additional feature is that a section with a <code># Coda</code> header
+will be stripped from notebook output. This allows a notebook
+to produce other artifacts without adding clutter.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=d60a0ba5">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dp_wizard_templates.converters</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">convert_py_to_nb</span><span class="p">,</span>
+    <span class="n">convert_nb_to_html</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">notebook_template</span><span class="p">(</span><span class="n">TITLE</span><span class="p">,</span> <span class="n">BLOCK</span><span class="p">,</span> <span class="n">FUNCTION_NAME</span><span class="p">):</span>
+    <span class="c1"># # TITLE</span>
+    <span class="c1">#</span>
+    <span class="c1"># Comments will be rendered as *Markdown*.</span>
+    <span class="c1"># The `+` and `-` below ensure that only one code cell is produced,</span>
+    <span class="c1"># even though the lines are not contiguous</span>
+
+    <span class="c1"># +</span>
+    <span class="n">BLOCK</span>
+
+    <span class="n">FUNCTION_NAME</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">)</span>
+    <span class="c1"># -</span>
+
+    <span class="c1"># # Coda</span>
+    <span class="c1">#</span>
+    <span class="c1"># Extra computations that will not be rendered.</span>
+
+    <span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span>
+
+
+<span class="n">title</span> <span class="o">=</span> <span class="s2">"Hello World!"</span>
+<span class="n">notebook_py</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">Template</span><span class="p">(</span><span class="n">notebook_template</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">fill_blocks</span><span class="p">(</span><span class="n">BLOCK</span><span class="o">=</span><span class="n">block_demo</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">fill_expressions</span><span class="p">(</span><span class="n">FUNCTION_NAME</span><span class="o">=</span><span class="s2">"freeze_warning"</span><span class="p">,</span> <span class="n">TITLE</span><span class="o">=</span><span class="n">title</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">finish</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="n">notebook_ipynb</span> <span class="o">=</span> <span class="n">convert_py_to_nb</span><span class="p">(</span><span class="n">notebook_py</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">execute</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="p">(</span><span class="n">root</span> <span class="o">/</span> <span class="s2">"hello-world.ipynb"</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">notebook_ipynb</span><span class="p">)</span>
+
+<span class="n">notebook_html</span> <span class="o">=</span> <span class="n">convert_nb_to_html</span><span class="p">(</span><span class="n">notebook_ipynb</span><span class="p">)</span>
+<span class="p">(</span><span class="n">root</span> <span class="o">/</span> <span class="s2">"hello-world.html"</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">notebook_html</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e175aa24">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>The <a href="README_examples/hello-world.html">output</a> is short,
+but it is an end-to-end demonstration of DP Wizard Templates,
+and as noted at the top, this documentation itself is rendered with
+<code>convert_py_to_nb</code> and <code>convert_nb_to_html</code>.</p>
+<h2 id="Last-thoughts">Last thoughts<a class="anchor-link" href="#Last-thoughts">¶</a></h2><p>Because the templates are valid Python, linters and other tools
+will by default include them in their coverage, and this may not be
+what you want. The exact configuration tweaks needed will depend
+on your tools, but here are some recommendations:</p>
+<ul>
+<li>You might keep template files under <code>templates/</code> subdirectories,
+and configure pytest (<code>--ignore-glob '**/templates/</code>) and pyright
+(<code>ignore = ["**/templates/"]</code>) to ignore them.</li>
+<li>For template functions, you might have a consistent naming
+convention, and configure coverage (<code>exclude_also = def template_</code>)
+to exclude them as well.</li>
+</ul>
 </div>
 </div>
 </div>
