@@ -59,34 +59,41 @@ class Template:
         """
         Fill in variable names, or dicts or lists represented as strings.
         """
+        errors = []
         for k, v in kwargs.items():
             k_re = re.escape(k)
             self._template, count = re.subn(rf"\b{k_re}\b", str(v), self._template)
             if count == 0:
-                raise Exception(
+                errors.append(
                     f"No '{k}' slot to fill with '{v}' in "
                     f"{self._source}:\n\n{self._template}"
                 )
+        if errors:
+            raise Exception("\n".join(errors))
         return self
 
     def fill_values(self, **kwargs):
         """
         Fill in string or numeric values. `repr` is called before filling.
         """
+        errors = []
         for k, v in kwargs.items():
             k_re = re.escape(k)
             self._template, count = re.subn(rf"\b{k_re}\b", repr(v), self._template)
             if count == 0:
-                raise Exception(
+                errors.append(
                     f"No '{k}' slot to fill with '{v}' in "
                     f"{self._source}:\n\n{self._template}"
                 )
+        if errors:
+            raise Exception("\n".join(errors))
         return self
 
     def fill_blocks(self, **kwargs):
         """
         Fill in code blocks. Slot must be alone on line.
         """
+        errors = []
         for k, v in kwargs.items():
             if not isinstance(v, str):
                 raise Exception(f"For {k} in {self._source}, expected string, not {v}")
@@ -110,10 +117,11 @@ class Template:
                     f"{self._source}:\n\n{self._template}"
                 )
                 if k in self._template:
-                    raise Exception(
-                        f"Block slots must be alone on line; {base_message}"
-                    )
-                raise Exception(base_message)
+                    errors.append(f"Block slots must be alone on line; {base_message}")
+                else:
+                    errors.append(base_message)
+        if errors:
+            raise Exception("\n".join(errors))
         return self
 
     def finish(self, reformat=False) -> str:
