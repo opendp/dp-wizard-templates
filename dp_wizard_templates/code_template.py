@@ -55,6 +55,9 @@ class Template:
         slot_re = r"\b[A-Z][A-Z_]{2,}\b"
         return set(re.findall(slot_re, self._template))
 
+    def _make_message(self, errors):
+        return f"In {self._source}, " + ", ".join(errors) + f":\n{self._template}"
+
     def fill_expressions(self, **kwargs):
         """
         Fill in variable names, or dicts or lists represented as strings.
@@ -64,12 +67,9 @@ class Template:
             k_re = re.escape(k)
             self._template, count = re.subn(rf"\b{k_re}\b", str(v), self._template)
             if count == 0:
-                errors.append(
-                    f"No '{k}' slot to fill with '{v}' in "
-                    f"{self._source}:\n\n{self._template}"
-                )
+                errors.append(f"no '{k}' slot to fill with '{v}'")
         if errors:
-            raise Exception("\n".join(errors))
+            raise Exception(self._make_message(errors))
         return self
 
     def fill_values(self, **kwargs):
@@ -81,12 +81,9 @@ class Template:
             k_re = re.escape(k)
             self._template, count = re.subn(rf"\b{k_re}\b", repr(v), self._template)
             if count == 0:
-                errors.append(
-                    f"No '{k}' slot to fill with '{v}' in "
-                    f"{self._source}:\n\n{self._template}"
-                )
+                errors.append(f"no '{k}' slot to fill with '{v}'")
         if errors:
-            raise Exception("\n".join(errors))
+            raise Exception(self._make_message(errors))
         return self
 
     def fill_blocks(self, **kwargs):
@@ -96,7 +93,8 @@ class Template:
         errors = []
         for k, v in kwargs.items():
             if not isinstance(v, str):
-                raise Exception(f"For {k} in {self._source}, expected string, not {v}")
+                errors.append(f"for '{k}' slot, expected string, not '{v}'")
+                continue
 
             def match_indent(match):
                 # This does what we want, but binding is confusing.
@@ -112,26 +110,20 @@ class Template:
                 flags=re.MULTILINE,
             )
             if count == 0:
-                base_message = (
-                    f"No '{k}' slot to fill with '{v}' in "
-                    f"{self._source}:\n\n{self._template}"
-                )
+                base_message = f"no '{k}' slot to fill with '{v}'"
                 if k in self._template:
-                    errors.append(f"Block slots must be alone on line; {base_message}")
+                    errors.append(f"{base_message} (block slots must be alone on line)")
                 else:
                     errors.append(base_message)
         if errors:
-            raise Exception("\n".join(errors))
+            raise Exception(self._make_message(errors))
         return self
 
     def finish(self, reformat=False) -> str:
         unfilled_slots = self._initial_slots & self._find_slots()
         if unfilled_slots:
-            slots_str = ", ".join(sorted(f"'{slot}'" for slot in unfilled_slots))
-            raise Exception(
-                f"{slots_str} slot not filled "
-                f"in {self._source}:\n\n{self._template}"
-            )
+            errors = [f"'{slot}' slot not filled" for slot in unfilled_slots]
+            raise Exception(self._make_message(errors))
 
         if reformat:
             self._template = black.format_str(self._template, mode=black.Mode())
