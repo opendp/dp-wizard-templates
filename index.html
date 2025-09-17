@@ -7597,7 +7597,7 @@ can be parsed, they should not be imported or executed as-is.)</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=4fd80ead">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=1500d30c">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7612,7 +7612,7 @@ can be parsed, they should not be imported or executed as-is.)</p>
 <span class="n">block_demo</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">Template</span><span class="p">(</span><span class="s2">"block_demo"</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">root</span> <span class="o">/</span> <span class="s2">"examples"</span><span class="p">)</span>
     <span class="o">.</span><span class="n">fill_expressions</span><span class="p">(</span><span class="n">FUNCTION_NAME</span><span class="o">=</span><span class="s2">"freeze_warning"</span><span class="p">,</span> <span class="n">PARAMS</span><span class="o">=</span><span class="s2">"temp_c"</span><span class="p">)</span>
-    <span class="o">.</span><span class="n">fill_blocks</span><span class="p">(</span><span class="n">INNER_BLOCK</span><span class="o">=</span><span class="n">conditional_print</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">fill_code_blocks</span><span class="p">(</span><span class="n">INNER_BLOCK</span><span class="o">=</span><span class="n">conditional_print</span><span class="p">)</span>
     <span class="o">.</span><span class="n">finish</span><span class="p">()</span>
 <span class="p">)</span>
 
@@ -7683,7 +7683,7 @@ to produce other artifacts without adding clutter.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=b5dc8879">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=ccf10f98">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7720,7 +7720,7 @@ to produce other artifacts without adding clutter.</p>
 <span class="n">title</span> <span class="o">=</span> <span class="s2">"Hello World!"</span>
 <span class="n">notebook_py</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">Template</span><span class="p">(</span><span class="n">notebook_template</span><span class="p">)</span>
-    <span class="o">.</span><span class="n">fill_blocks</span><span class="p">(</span><span class="n">BLOCK</span><span class="o">=</span><span class="n">block_demo</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">fill_code_blocks</span><span class="p">(</span><span class="n">BLOCK</span><span class="o">=</span><span class="n">block_demo</span><span class="p">)</span>
     <span class="o">.</span><span class="n">fill_expressions</span><span class="p">(</span><span class="n">FUNCTION_NAME</span><span class="o">=</span><span class="s2">"freeze_warning"</span><span class="p">,</span> <span class="n">TITLE</span><span class="o">=</span><span class="n">title</span><span class="p">)</span>
     <span class="o">.</span><span class="n">finish</span><span class="p">()</span>
 <span class="p">)</span>

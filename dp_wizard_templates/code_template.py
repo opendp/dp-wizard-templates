@@ -76,25 +76,7 @@ class Template:
 
         self._loop_kwargs(function, **kwargs)
 
-    def fill_expressions(self, **kwargs):
-        """
-        Fill in variable names, or dicts or lists represented as strings.
-        """
-        self._fill_inline_slots(str, **kwargs)
-        return self
-
-    def fill_values(self, **kwargs):
-        """
-        Fill in string or numeric values. `repr` is called before filling.
-        """
-        self._fill_inline_slots(repr, **kwargs)
-        return self
-
-    def fill_blocks(self, **kwargs):
-        """
-        Fill in code blocks. Slot must be alone on line.
-        """
-
+    def _fill_block_slots(self, **kwargs):
         def function(k, v, errors):
             if not isinstance(v, str):
                 errors.append(f"for '{k}' slot, expected string, not '{v}'")
@@ -121,6 +103,26 @@ class Template:
                     errors.append(base_message)
 
         self._loop_kwargs(function, **kwargs)
+
+    def fill_expressions(self, **kwargs):
+        """
+        Fill in variable names, or dicts or lists represented as strings.
+        """
+        self._fill_inline_slots(str, **kwargs)
+        return self
+
+    def fill_values(self, **kwargs):
+        """
+        Fill in string or numeric values. `repr` is called before filling.
+        """
+        self._fill_inline_slots(repr, **kwargs)
+        return self
+
+    def fill_code_blocks(self, **kwargs):
+        """
+        Fill in code blocks. Slot must be alone on line.
+        """
+        self._fill_block_slots(**kwargs)
         return self
 
     def finish(self, reformat=False) -> str:

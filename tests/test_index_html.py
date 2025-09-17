@@ -77,7 +77,7 @@ root = Path(__file__).parent.parent
 block_demo = (
     Template("block_demo", root=root / "examples")
     .fill_expressions(FUNCTION_NAME="freeze_warning", PARAMS="temp_c")
-    .fill_blocks(INNER_BLOCK=conditional_print)
+    .fill_code_blocks(INNER_BLOCK=conditional_print)
     .finish()
 )
 
@@ -152,7 +152,7 @@ def notebook_template(TITLE, BLOCK, FUNCTION_NAME):
 title = "Hello World!"
 notebook_py = (
     Template(notebook_template)
-    .fill_blocks(BLOCK=block_demo)
+    .fill_code_blocks(BLOCK=block_demo)
     .fill_expressions(FUNCTION_NAME="freeze_warning", TITLE=title)
     .finish()
 )

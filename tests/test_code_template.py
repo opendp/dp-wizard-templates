@@ -102,7 +102,7 @@ with fake:
         THIRD
 """,
     )
-    template.fill_blocks(
+    template.fill_code_blocks(
         FIRST="\n".join(f"import {i}" for i in "abc"),
         SECOND="\n".join(f"f({i})" for i in "123"),
         THIRD="\n".join(f"{i}()" for i in "xyz"),
@@ -130,7 +130,7 @@ with fake:
 def test_fill_blocks_missing_slot_in_template_alone():
     template = Template("No block slot")
     with pytest.raises(Exception, match=r"no 'SLOT' slot to fill with 'placeholder':"):
-        template.fill_blocks(SLOT="placeholder").finish()
+        template.fill_code_blocks(SLOT="placeholder").finish()
 
 
 def test_fill_blocks_missing_slot_in_template_not_alone():
@@ -140,13 +140,13 @@ def test_fill_blocks_missing_slot_in_template_not_alone():
         match=r"no 'SLOT' slot to fill with 'placeholder' "
         r"\(block slots must be alone on line\)",
     ):
-        template.fill_blocks(SLOT="placeholder").finish()
+        template.fill_code_blocks(SLOT="placeholder").finish()
 
 
 def test_fill_blocks_extra_slot_in_template():
     template = Template("EXTRA\nSLOT")
     with pytest.raises(Exception, match=r"'EXTRA' slot not filled"):
-        template.fill_blocks(SLOT="placeholder").finish()
+        template.fill_code_blocks(SLOT="placeholder").finish()
 
 
 def test_fill_blocks_not_string():
@@ -155,4 +155,4 @@ def test_fill_blocks_not_string():
         Exception,
         match=r"for 'SOMETHING' slot, expected string, not '123'",
     ):
-        template.fill_blocks(SOMETHING=123).finish()
+        template.fill_code_blocks(SOMETHING=123).finish()
