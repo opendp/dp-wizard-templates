@@ -7574,13 +7574,18 @@ itself can be parsed as Python code, so syntax highlighting and linting still wo
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=debe102a">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=39e34438">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Note the different methods used:</p>
+<p>Note that <code>conditional_print_template</code> is not called: Instead,
+the <code>inspect</code> package is used to load its source, and the slots
+in all-caps are filled. Including a parameter list is optional,
+but providing args which match the names of your slots can prevent
+warnings from your IDE.</p>
+<p>Different methods are available on the <code>Template</code> object:</p>
 <ul>
 <li><code>fill_expressions()</code> fills the slot with verbatim text.
 It can be used for an expression like this, or for variable names.</li>
@@ -7590,14 +7595,15 @@ data structure, as long as it has a usable repr.</li>
 <li><code>finish()</code> converts the template to a string, and will error
 if not all slots have been filled.</li>
 </ul>
-<p>Templates can also be in standalone files. If a <code>root</code> parameter is provided,
+<p>(The next section will introduce <code>fill_code_block()</code> and <code>fill_comment_block()</code>.)</p>
+<p>Templates can also be standalone files. If a <code>root</code> parameter is provided,
 the system will prepend <code>_</code> and append <code>.py</code> and look for a corresponding file.
 (The convention of prepending <code>_</code> reminds us that although these files
 can be parsed, they should not be imported or executed as-is.)</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=1500d30c">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=589cc13d">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7613,6 +7619,9 @@ can be parsed, they should not be imported or executed as-is.)</p>
     <span class="n">Template</span><span class="p">(</span><span class="s2">"block_demo"</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">root</span> <span class="o">/</span> <span class="s2">"examples"</span><span class="p">)</span>
     <span class="o">.</span><span class="n">fill_expressions</span><span class="p">(</span><span class="n">FUNCTION_NAME</span><span class="o">=</span><span class="s2">"freeze_warning"</span><span class="p">,</span> <span class="n">PARAMS</span><span class="o">=</span><span class="s2">"temp_c"</span><span class="p">)</span>
     <span class="o">.</span><span class="n">fill_code_blocks</span><span class="p">(</span><span class="n">INNER_BLOCK</span><span class="o">=</span><span class="n">conditional_print</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">fill_comment_blocks</span><span class="p">(</span>
+        <span class="n">COMMENT</span><span class="o">=</span><span class="s2">"Water freezes at:</span><span class="se">\n</span><span class="s2">32 Fahrenheit</span><span class="se">\n</span><span class="s2">0 Celsius"</span>
+    <span class="p">)</span>
     <span class="o">.</span><span class="n">finish</span><span class="p">()</span>
 <span class="p">)</span>
 
@@ -7622,6 +7631,9 @@ can be parsed, they should not be imported or executed as-is.)</p>
 <span class="s1">    """</span>
 <span class="s1">    This demonstrates how larger blocks of code can be built compositionally.</span>
 <span class="s1">    """</span>
+<span class="s1">    # Water freezes at:</span>
+<span class="s1">    # 32 Fahrenheit</span>
+<span class="s1">    # 0 Celsius</span>
 <span class="s1">    if temp_c &lt; 0:</span>
 <span class="s1">        print('It is freezing!')</span>
 <span class="s1">'''</span>

@@ -54,7 +54,13 @@ assert conditional_print == "if temp_c < 0:\n    print('It is freezing!')"
 
 # -
 
-# Note the different methods used:
+# Note that `conditional_print_template` is not called: Instead,
+# the `inspect` package is used to load its source, and the slots
+# in all-caps are filled. Including a parameter list is optional,
+# but providing args which match the names of your slots can prevent
+# warnings from your IDE.
+#
+# Different methods are available on the `Template` object:
 # - `fill_expressions()` fills the slot with verbatim text.
 #   It can be used for an expression like this, or for variable names.
 # - `fill_values()` fills the slot with the repr of the provided value.
@@ -63,7 +69,9 @@ assert conditional_print == "if temp_c < 0:\n    print('It is freezing!')"
 # - `finish()` converts the template to a string, and will error
 #   if not all slots have been filled.
 #
-# Templates can also be in standalone files. If a `root` parameter is provided,
+# (The next section will introduce `fill_code_block()` and `fill_comment_block()`.)
+#
+# Templates can also be standalone files. If a `root` parameter is provided,
 # the system will prepend `_` and append `.py` and look for a corresponding file.
 # (The convention of prepending `_` reminds us that although these files
 # can be parsed, they should not be imported or executed as-is.)
@@ -78,6 +86,7 @@ block_demo = (
     Template("block_demo", root=root / "examples")
     .fill_expressions(FUNCTION_NAME="freeze_warning", PARAMS="temp_c")
     .fill_code_blocks(INNER_BLOCK=conditional_print)
+    .fill_comment_blocks(COMMENT="Water freezes at:\n32 Fahrenheit\n0 Celsius")
     .finish()
 )
 
@@ -87,6 +96,9 @@ assert (
     """
     This demonstrates how larger blocks of code can be built compositionally.
     """
+    # Water freezes at:
+    # 32 Fahrenheit
+    # 0 Celsius
     if temp_c < 0:
         print('It is freezing!')
 '''
