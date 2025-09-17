@@ -58,32 +58,28 @@ class Template:
     def _make_message(self, errors):
         return f"In {self._source}, " + ", ".join(errors) + f":\n{self._template}"
 
-    def fill_expressions(self, **kwargs):
-        """
-        Fill in variable names, or dicts or lists represented as strings.
-        """
+    def _fill(self, helper, **kwargs):
         errors = []
         for k, v in kwargs.items():
             k_re = re.escape(k)
-            self._template, count = re.subn(rf"\b{k_re}\b", str(v), self._template)
+            self._template, count = re.subn(rf"\b{k_re}\b", helper(v), self._template)
             if count == 0:
                 errors.append(f"no '{k}' slot to fill with '{v}'")
         if errors:
             raise Exception(self._make_message(errors))
+
+    def fill_expressions(self, **kwargs):
+        """
+        Fill in variable names, or dicts or lists represented as strings.
+        """
+        self._fill(str, **kwargs)
         return self
 
     def fill_values(self, **kwargs):
         """
         Fill in string or numeric values. `repr` is called before filling.
         """
-        errors = []
-        for k, v in kwargs.items():
-            k_re = re.escape(k)
-            self._template, count = re.subn(rf"\b{k_re}\b", repr(v), self._template)
-            if count == 0:
-                errors.append(f"no '{k}' slot to fill with '{v}'")
-        if errors:
-            raise Exception(self._make_message(errors))
+        self._fill(repr, **kwargs)
         return self
 
     def fill_blocks(self, **kwargs):
