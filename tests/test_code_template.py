@@ -97,18 +97,27 @@ def test_fill_blocks():
 FIRST
 
 with fake:
-    SECOND
+    my_tuple = (
+        # SECOND
+        VALUE,
+    )
     if True:
         THIRD
 """,
     )
-    template.fill_code_blocks(
-        FIRST="\n".join(f"import {i}" for i in "abc"),
-        SECOND="\n".join(f"f({i})" for i in "123"),
-        THIRD="\n".join(f"{i}()" for i in "xyz"),
+    filled = (
+        template.fill_code_blocks(
+            FIRST="\n".join(f"import {i}" for i in "abc"),
+            THIRD="\n".join(f"{i}()" for i in "xyz"),
+        )
+        .fill_comment_blocks(
+            SECOND="This is a\nmulti-line comment",
+        )
+        .fill_values(VALUE=42)
+        .finish()
     )
     assert (
-        template.finish()
+        filled
         == """# MixedCase is OK
 
 import a
@@ -116,9 +125,11 @@ import b
 import c
 
 with fake:
-    f(1)
-    f(2)
-    f(3)
+    my_tuple = (
+        # This is a
+        # multi-line comment
+        42,
+    )
     if True:
         x()
         y()

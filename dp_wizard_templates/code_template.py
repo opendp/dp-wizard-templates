@@ -76,7 +76,7 @@ class Template:
 
         self._loop_kwargs(function, **kwargs)
 
-    def _fill_block_slots(self, **kwargs):
+    def _fill_block_slots(self, prefix_re, **kwargs):
         def function(k, v, errors):
             if not isinstance(v, str):
                 errors.append(f"for '{k}' slot, expected string, not '{v}'")
@@ -90,7 +90,7 @@ class Template:
 
             k_re = re.escape(k)
             self._template, count = re.subn(
-                rf"^([ \t]*){k_re}$",
+                rf"^([ \t]*{prefix_re}){k_re}$",
                 match_indent,
                 self._template,
                 flags=re.MULTILINE,
@@ -122,7 +122,14 @@ class Template:
         """
         Fill in code blocks. Slot must be alone on line.
         """
-        self._fill_block_slots(**kwargs)
+        self._fill_block_slots(r"", **kwargs)
+        return self
+
+    def fill_comment_blocks(self, **kwargs):
+        """
+        Fill in comment blocks. Slot must be commented.
+        """
+        self._fill_block_slots(r"#\s+", **kwargs)
         return self
 
     def finish(self, reformat=False) -> str:
