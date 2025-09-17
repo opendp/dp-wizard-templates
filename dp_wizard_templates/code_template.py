@@ -1,3 +1,5 @@
+from typing import Optional, Callable
+from pathlib import Path
 import inspect
 import re
 import black
@@ -30,7 +32,7 @@ def _get_body(func):
 
 
 class Template:
-    def __init__(self, template, root=None):
+    def __init__(self, template: str | Callable, root: Optional[Path] = None):
         if root is not None:
             template_name = f"_{template}.py"
             template_path = root / template_name
@@ -47,7 +49,7 @@ class Template:
         # can produce sequences of upper case letters that could be mistaken for slots.
         self._initial_slots = self._find_slots()
 
-    def _find_slots(self):
+    def _find_slots(self) -> set[str]:
         # Slots:
         # - are all caps or underscores
         # - have word boundary on either side
@@ -55,19 +57,21 @@ class Template:
         slot_re = r"\b[A-Z][A-Z_]{2,}\b"
         return set(re.findall(slot_re, self._template))
 
-    def _make_message(self, errors):
+    def _make_message(self, errors: list[str]) -> str:
         return (
             f"In {self._source}, " + ", ".join(sorted(errors)) + f":\n{self._template}"
         )
 
-    def _loop_kwargs(self, function, **kwargs):
+    def _loop_kwargs(
+        self, function: Callable[[str, str, list[str]], None], **kwargs
+    ) -> None:
         errors = []
         for k, v in kwargs.items():
             function(k, v, errors)
         if errors:
             raise Exception(self._make_message(errors))
 
-    def _fill_inline_slots(self, helper, **kwargs):
+    def _fill_inline_slots(self, helper: Callable[[str], str], **kwargs) -> None:
         def function(k, v, errors):
             k_re = re.escape(k)
             self._template, count = re.subn(rf"\b{k_re}\b", helper(v), self._template)
@@ -76,7 +80,7 @@ class Template:
 
         self._loop_kwargs(function, **kwargs)
 
-    def _fill_block_slots(self, prefix_re, **kwargs):
+    def _fill_block_slots(self, prefix_re: str, **kwargs) -> None:
         def function(k, v, errors):
             if not isinstance(v, str):
                 errors.append(f"for '{k}' slot, expected string, not '{v}'")
@@ -104,35 +108,35 @@ class Template:
 
         self._loop_kwargs(function, **kwargs)
 
-    def fill_expressions(self, **kwargs):
+    def fill_expressions(self, **kwargs) -> "Template":
         """
         Fill in variable names, or dicts or lists represented as strings.
         """
         self._fill_inline_slots(str, **kwargs)
         return self
 
-    def fill_values(self, **kwargs):
+    def fill_values(self, **kwargs) -> "Template":
         """
         Fill in string or numeric values. `repr` is called before filling.
         """
         self._fill_inline_slots(repr, **kwargs)
         return self
 
-    def fill_code_blocks(self, **kwargs):
+    def fill_code_blocks(self, **kwargs) -> "Template":
         """
         Fill in code blocks. Slot must be alone on line.
         """
         self._fill_block_slots(r"", **kwargs)
         return self
 
-    def fill_comment_blocks(self, **kwargs):
+    def fill_comment_blocks(self, **kwargs) -> "Template":
         """
         Fill in comment blocks. Slot must be commented.
         """
         self._fill_block_slots(r"#\s+", **kwargs)
         return self
 
-    def finish(self, reformat=False) -> str:
+    def finish(self, reformat: bool = False) -> str:
         unfilled_slots = self._initial_slots & self._find_slots()
         if unfilled_slots:
             errors = [f"'{slot}' slot not filled" for slot in unfilled_slots]

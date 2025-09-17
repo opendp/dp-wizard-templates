@@ -30,7 +30,7 @@ class ConversionException(Exception):
 
 def convert_py_to_nb(
     python_str: str, title: str, execute: bool = False, reformat: bool = True
-):
+) -> str:
     """
     Given Python code as a string, returns a notebook as a string.
     Calls jupytext as a subprocess:
@@ -71,13 +71,13 @@ def convert_py_to_nb(
     return _clean_nb(json.dumps(nb_dict))
 
 
-def _stable_hash(lines: list[str]):
+def _stable_hash(lines: list[str]) -> str:
     import hashlib
 
     return hashlib.sha1("\n".join(lines).encode()).hexdigest()[:8]
 
 
-def _clean_nb(nb_json: str):
+def _clean_nb(nb_json: str) -> str:
     """
     Given a notebook as a string of JSON, remove the coda and pip output.
     (The code may produce reports that we do need,
@@ -104,7 +104,7 @@ def _clean_nb(nb_json: str):
     return json.dumps(nb, indent=1)
 
 
-def convert_nb_to_html(python_nb: str, numbered=True):
+def convert_nb_to_html(python_nb: str, numbered=True) -> str:
     notebook = nbformat.reads(python_nb, as_version=4)
     exporter = nbconvert.HTMLExporter(
         template_name="lab",
