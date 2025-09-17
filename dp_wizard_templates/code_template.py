@@ -60,45 +60,45 @@ class Template:
             f"In {self._source}, " + ", ".join(sorted(errors)) + f":\n{self._template}"
         )
 
-    def _loop_kwargs_collect_errors(self, function, **kwargs):
+    def _loop_kwargs(self, function, **kwargs):
         errors = []
         for k, v in kwargs.items():
             function(k, v, errors)
         if errors:
             raise Exception(self._make_message(errors))
 
-    def _fill(self, helper, **kwargs):
+    def _fill_inline_slots(self, helper, **kwargs):
         def function(k, v, errors):
             k_re = re.escape(k)
             self._template, count = re.subn(rf"\b{k_re}\b", helper(v), self._template)
             if count == 0:
                 errors.append(f"no '{k}' slot to fill with '{v}'")
 
-        self._loop_kwargs_collect_errors(function, **kwargs)
+        self._loop_kwargs(function, **kwargs)
 
     def fill_expressions(self, **kwargs):
         """
         Fill in variable names, or dicts or lists represented as strings.
         """
-        self._fill(str, **kwargs)
+        self._fill_inline_slots(str, **kwargs)
         return self
 
     def fill_values(self, **kwargs):
         """
         Fill in string or numeric values. `repr` is called before filling.
         """
-        self._fill(repr, **kwargs)
+        self._fill_inline_slots(repr, **kwargs)
         return self
 
     def fill_blocks(self, **kwargs):
         """
         Fill in code blocks. Slot must be alone on line.
         """
-        errors = []
-        for k, v in kwargs.items():
+
+        def function(k, v, errors):
             if not isinstance(v, str):
                 errors.append(f"for '{k}' slot, expected string, not '{v}'")
-                continue
+                return
 
             def match_indent(match):
                 # This does what we want, but binding is confusing.
@@ -119,8 +119,8 @@ class Template:
                     errors.append(f"{base_message} (block slots must be alone on line)")
                 else:
                     errors.append(base_message)
-        if errors:
-            raise Exception(self._make_message(errors))
+
+        self._loop_kwargs(function, **kwargs)
         return self
 
     def finish(self, reformat=False) -> str:
