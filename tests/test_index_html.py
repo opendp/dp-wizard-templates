@@ -86,7 +86,13 @@ block_demo = (
     Template("block_demo", root=root / "examples")
     .fill_expressions(FUNCTION_NAME="freeze_warning", PARAMS="temp_c")
     .fill_code_blocks(INNER_BLOCK=conditional_print)
-    .fill_comment_blocks(COMMENT="Water freezes at:\n32 Fahrenheit\n0 Celsius")
+    .fill_comment_blocks(
+        COMMENT="""
+        Water freezes at:
+        32 Fahrenheit
+        0 Celsius
+        """
+    )
     .finish()
 )
 

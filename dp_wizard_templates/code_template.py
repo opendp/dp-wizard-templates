@@ -32,7 +32,11 @@ def _get_body(func):
 
 
 class Template:
-    def __init__(self, template: str | Callable, root: Optional[Path] = None):
+    def __init__(
+        self,
+        template: str | Callable,
+        root: Optional[Path] = None,
+    ):
         if root is not None:
             template_name = f"_{template}.py"
             template_path = root / template_name
@@ -63,7 +67,9 @@ class Template:
         )
 
     def _loop_kwargs(
-        self, function: Callable[[str, str, list[str]], None], **kwargs
+        self,
+        function: Callable[[str, str, list[str]], None],
+        **kwargs,
     ) -> None:
         errors = []
         for k, v in kwargs.items():
@@ -71,16 +77,27 @@ class Template:
         if errors:
             raise Exception(self._make_message(errors))
 
-    def _fill_inline_slots(self, helper: Callable[[str], str], **kwargs) -> None:
+    def _fill_inline_slots(
+        self,
+        stringifier: Callable[[str], str],
+        **kwargs,
+    ) -> None:
         def function(k, v, errors):
             k_re = re.escape(k)
-            self._template, count = re.subn(rf"\b{k_re}\b", helper(v), self._template)
+            self._template, count = re.subn(
+                rf"\b{k_re}\b", stringifier(v), self._template
+            )
             if count == 0:
                 errors.append(f"no '{k}' slot to fill with '{v}'")
 
         self._loop_kwargs(function, **kwargs)
 
-    def _fill_block_slots(self, prefix_re: str, **kwargs) -> None:
+    def _fill_block_slots(
+        self,
+        prefix_re: str,
+        splitter: Callable[[str], list[str]],
+        **kwargs,
+    ) -> None:
         def function(k, v, errors):
             if not isinstance(v, str):
                 errors.append(f"for '{k}' slot, expected string, not '{v}'")
@@ -89,7 +106,7 @@ class Template:
             def match_indent(match):
                 # This does what we want, but binding is confusing.
                 return "\n".join(
-                    match.group(1) + line for line in v.split("\n")  # noqa: B023
+                    match.group(1) + line for line in splitter(v)  # noqa: B023
                 )
 
             k_re = re.escape(k)
@@ -112,28 +129,37 @@ class Template:
         """
         Fill in variable names, or dicts or lists represented as strings.
         """
-        self._fill_inline_slots(str, **kwargs)
+        self._fill_inline_slots(stringifier=str, **kwargs)
         return self
 
     def fill_values(self, **kwargs) -> "Template":
         """
         Fill in string or numeric values. `repr` is called before filling.
         """
-        self._fill_inline_slots(repr, **kwargs)
+        self._fill_inline_slots(stringifier=repr, **kwargs)
         return self
 
     def fill_code_blocks(self, **kwargs) -> "Template":
         """
         Fill in code blocks. Slot must be alone on line.
         """
-        self._fill_block_slots(r"", **kwargs)
+
+        def splitter(s):
+            return s.split("\n")
+
+        self._fill_block_slots(prefix_re=r"", splitter=splitter, **kwargs)
         return self
 
     def fill_comment_blocks(self, **kwargs) -> "Template":
         """
         Fill in comment blocks. Slot must be commented.
         """
-        self._fill_block_slots(r"#\s+", **kwargs)
+
+        def splitter(s):
+            stripped = [line.strip() for line in s.split("\n")]
+            return [line for line in stripped if line]
+
+        self._fill_block_slots(prefix_re=r"#\s+", splitter=splitter, **kwargs)
         return self
 
     def finish(self, reformat: bool = False) -> str:
