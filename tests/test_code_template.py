@@ -138,6 +138,22 @@ with fake:
     )
 
 
+def test_fill_comment_block():
+    template = Template("# SLOT")
+    filled = template.fill_comment_blocks(SLOT="placeholder").finish()
+    assert filled == "# placeholder"
+
+
+def test_fill_comment_block_without_comment():
+    template = Template("SLOT")
+    with pytest.raises(
+        Exception,
+        match=r"In string template, no 'SLOT' slot to fill with 'placeholder' "
+        r"\(comment slots must be prefixed with '#'\)",
+    ):
+        template.fill_comment_blocks(SLOT="placeholder").finish()
+
+
 def test_fill_blocks_missing_slot_in_template_alone():
     template = Template("No block slot")
     with pytest.raises(Exception, match=r"no 'SLOT' slot to fill with 'placeholder':"):

@@ -119,7 +119,12 @@ class Template:
             if count == 0:
                 base_message = f"no '{k}' slot to fill with '{v}'"
                 if k in self._template:
-                    errors.append(f"{base_message} (block slots must be alone on line)")
+                    note = (
+                        "comment slots must be prefixed with '#'"
+                        if prefix_re
+                        else "block slots must be alone on line"
+                    )
+                    errors.append(f"{base_message} ({note})")
                 else:
                     errors.append(base_message)
 
