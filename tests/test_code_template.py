@@ -37,9 +37,9 @@ def test_fill_expressions_missing_slots_in_template():
     template = Template("No one ... the ... ...!")
     with pytest.raises(
         Exception,
-        match=r"no 'VERB' slot to fill with 'expects', "
-        r"no 'ADJ' slot to fill with 'Spanish', "
-        r"no 'NOUN' slot to fill with 'Inquisition'",
+        match=r"no 'ADJ' slot to fill with 'Spanish', "
+        r"no 'NOUN' slot to fill with 'Inquisition', "
+        r"no 'VERB' slot to fill with 'expects':",
     ):
         template.fill_expressions(
             VERB="expects",
