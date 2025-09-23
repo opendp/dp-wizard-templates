@@ -33,9 +33,14 @@ def test_fill_expressions():
     assert filled == "No one expects the Spanish Inquisition!"
 
 
-def test_fill_expressions_missing_slot_in_template():
-    template = Template("No one ... the ADJ NOUN!")
-    with pytest.raises(Exception, match=r"No 'VERB' slot to fill with 'expects'"):
+def test_fill_expressions_missing_slots_in_template():
+    template = Template("No one ... the ... ...!")
+    with pytest.raises(
+        Exception,
+        match=r"no 'ADJ' slot to fill with 'Spanish', "
+        r"no 'NOUN' slot to fill with 'Inquisition', "
+        r"no 'VERB' slot to fill with 'expects':",
+    ):
         template.fill_expressions(
             VERB="expects",
             ADJ="Spanish",
@@ -43,11 +48,12 @@ def test_fill_expressions_missing_slot_in_template():
         ).finish()
 
 
-def test_fill_expressions_extra_slot_in_template():
+def test_fill_expressions_extra_slots_in_template():
     template = Template("No one VERB ARTICLE ADJ NOUN!")
-    with pytest.raises(Exception, match=r"'ARTICLE' slot not filled"):
+    with pytest.raises(
+        Exception, match=r"'ARTICLE' slot not filled, 'VERB' slot not filled"
+    ):
         template.fill_expressions(
-            VERB="expects",
             ADJ="Spanish",
             NOUN="Inquisition",
         ).finish()
@@ -65,7 +71,7 @@ def test_fill_values():
 
 def test_fill_values_missing_slot_in_template():
     template = Template("assert [STRING] * ... == LIST")
-    with pytest.raises(Exception, match=r"No 'NUM' slot to fill with '3'"):
+    with pytest.raises(Exception, match=r"no 'NUM' slot to fill with '3'"):
         template.fill_values(
             STRING="🙂",
             NUM=3,
@@ -91,18 +97,27 @@ def test_fill_blocks():
 FIRST
 
 with fake:
-    SECOND
+    my_tuple = (
+        # SECOND
+        VALUE,
+    )
     if True:
         THIRD
 """,
     )
-    template.fill_blocks(
-        FIRST="\n".join(f"import {i}" for i in "abc"),
-        SECOND="\n".join(f"f({i})" for i in "123"),
-        THIRD="\n".join(f"{i}()" for i in "xyz"),
+    filled = (
+        template.fill_code_blocks(
+            FIRST="\n".join(f"import {i}" for i in "abc"),
+            THIRD="\n".join(f"{i}()" for i in "xyz"),
+        )
+        .fill_comment_blocks(
+            SECOND="This is a\nmulti-line comment",
+        )
+        .fill_values(VALUE=42)
+        .finish()
     )
     assert (
-        template.finish()
+        filled
         == """# MixedCase is OK
 
 import a
@@ -110,9 +125,11 @@ import b
 import c
 
 with fake:
-    f(1)
-    f(2)
-    f(3)
+    my_tuple = (
+        # This is a
+        # multi-line comment
+        42,
+    )
     if True:
         x()
         y()
@@ -121,30 +138,48 @@ with fake:
     )
 
 
+def test_fill_comment_block():
+    template = Template("# SLOT")
+    filled = template.fill_comment_blocks(SLOT="placeholder").finish()
+    assert filled == "# placeholder"
+
+
+def test_fill_comment_block_without_comment():
+    template = Template("SLOT")
+    with pytest.raises(
+        Exception,
+        match=r"In string template, no 'SLOT' slot to fill with 'placeholder' "
+        r"\(comment slots must be prefixed with '#'\)",
+    ):
+        template.fill_comment_blocks(SLOT="placeholder").finish()
+
+
 def test_fill_blocks_missing_slot_in_template_alone():
     template = Template("No block slot")
-    with pytest.raises(Exception, match=r"No 'SLOT' slot"):
-        template.fill_blocks(SLOT="placeholder").finish()
+    with pytest.raises(Exception, match=r"no 'SLOT' slot to fill with 'placeholder':"):
+        template.fill_code_blocks(SLOT="placeholder").finish()
 
 
 def test_fill_blocks_missing_slot_in_template_not_alone():
     template = Template("No block SLOT")
     with pytest.raises(
-        Exception, match=r"Block slots must be alone on line; No 'SLOT' slot"
+        Exception,
+        match=r"no 'SLOT' slot to fill with 'placeholder' "
+        r"\(block slots must be alone on line\)",
     ):
-        template.fill_blocks(SLOT="placeholder").finish()
+        template.fill_code_blocks(SLOT="placeholder").finish()
 
 
 def test_fill_blocks_extra_slot_in_template():
     template = Template("EXTRA\nSLOT")
     with pytest.raises(Exception, match=r"'EXTRA' slot not filled"):
-        template.fill_blocks(SLOT="placeholder").finish()
+        template.fill_code_blocks(SLOT="placeholder").finish()
 
 
 def test_fill_blocks_not_string():
     template = Template("SOMETHING")
     with pytest.raises(
         Exception,
-        match=r"For SOMETHING in string template, expected string, not 123",
+        match=r"for 'SOMETHING' slot, expected string, not '123'",
     ):
-        template.fill_blocks(SOMETHING=123).finish()
+        template.fill_code_blocks(SOMETHING=123).finish()
