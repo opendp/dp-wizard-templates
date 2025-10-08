@@ -7544,7 +7544,7 @@ itself can be parsed as Python code, so syntax highlighting and linting still wo
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=62140d41">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=6d9f9ab3">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7556,7 +7556,7 @@ itself can be parsed as Python code, so syntax highlighting and linting still wo
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">conditional_print_template</span><span class="p">(</span><span class="n">CONDITION</span><span class="p">,</span> <span class="n">MESSAGE</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">CONDITION</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">CONDITION</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">MESSAGE</span><span class="p">)</span>
 
 
@@ -7699,7 +7699,7 @@ to produce other artifacts without adding clutter.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=ccf10f98">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=401570bb">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7713,7 +7713,7 @@ to produce other artifacts without adding clutter.</p>
 <span class="p">)</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">notebook_template</span><span class="p">(</span><span class="n">TITLE</span><span class="p">,</span> <span class="n">BLOCK</span><span class="p">,</span> <span class="n">FUNCTION_NAME</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">notebook_template</span><span class="p">(</span><span class="n">TITLE</span><span class="p">,</span> <span class="n">BLOCK</span><span class="p">,</span> <span class="n">FUNCTION_NAME</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
     <span class="c1"># # TITLE</span>
     <span class="c1">#</span>
     <span class="c1"># Comments will be rendered as *Markdown*.</span>

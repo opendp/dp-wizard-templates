@@ -39,7 +39,7 @@ from dp_wizard_templates.code_template import Template
 
 
 def conditional_print_template(CONDITION, MESSAGE):
-    if CONDITION:
+    if CONDITION:  # pragma: no cover
         print(MESSAGE)
 
 
@@ -147,7 +147,7 @@ assert assignment == "band = 'Duran' * 2"
 from dp_wizard_templates.converters import convert_py_to_nb, convert_nb_to_html
 
 
-def notebook_template(TITLE, BLOCK, FUNCTION_NAME):
+def notebook_template(TITLE, BLOCK, FUNCTION_NAME):  # pragma: no cover
     # # TITLE
     #
     # Comments will be rendered as *Markdown*.
