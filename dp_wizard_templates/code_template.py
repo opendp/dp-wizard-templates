@@ -3,6 +3,7 @@ from pathlib import Path
 import inspect
 import re
 import black
+import json
 
 
 def _get_body(func):
@@ -29,6 +30,22 @@ def _get_body(func):
         body,
     )
     return body
+
+
+def _check_repr(value):
+    """
+    Confirms that the string returned by repr()
+    can be evaluated to recreate the original value.
+
+    >>> _check_repr(None)
+    'None'
+    >>> _check_repr({1})
+    Traceback (most recent call last):
+    ...
+    TypeError: Object of type set is not JSON serializable
+    """
+    json.dumps(value)
+    return repr(value)
 
 
 class Template:
@@ -144,7 +161,7 @@ class Template:
         """
         Fill in string or numeric values. `repr` is called before filling.
         """
-        self._fill_inline_slots(stringifier=repr, **kwargs)
+        self._fill_inline_slots(stringifier=_check_repr, **kwargs)
         return self
 
     def fill_code_blocks(self, **kwargs) -> "Template":
