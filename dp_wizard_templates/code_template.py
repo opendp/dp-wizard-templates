@@ -37,18 +37,21 @@ class Template:
         template: str | Callable,
         root: Optional[Path] = None,
     ):
-        if root is not None:
-            template_name = f"_{template}.py"
-            template_path = root / template_name
-            self._source = f"'{template_name}'"
-            self._template = template_path.read_text()
-        else:
+        if root is None:
             if callable(template):
                 self._source = "function template"
                 self._template = _get_body(template)
             else:
                 self._source = "string template"
                 self._template = template
+        else:
+            if callable(template):
+                raise Exception("If template is function, root kwarg not allowed")
+            else:
+                template_name = f"_{template}.py"
+                template_path = root / template_name
+                self._source = f"'{template_name}'"
+                self._template = template_path.read_text()
         # We want a list of the initial slots, because substitutions
         # can produce sequences of upper case letters that could be mistaken for slots.
         self._initial_slots = self._find_slots()
