@@ -176,6 +176,13 @@ class Template:
             errors = [f"'{slot}' slot not filled" for slot in unfilled_slots]
             raise Exception(self._make_message(errors))
 
+        self._template = re.sub(
+            r"\s*#\s*pragma:\s*no cover\s*$",
+            "",
+            self._template,
+            flags=re.MULTILINE,
+        )
+
         if reformat:
             self._template = black.format_str(self._template, mode=black.Mode())
 
