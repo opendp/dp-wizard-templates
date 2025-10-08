@@ -4,12 +4,19 @@ import pytest
 from dp_wizard_templates.code_template import Template
 
 
+def test_strip_pragma():
+    def template():
+        pass  # pragma: no cover
+
+    assert Template(template).finish() == "pass"
+
+
 def test_def_too_long():
     def template(
         BEGIN,
         END,
     ):
-        print(BEGIN, END)  # pragma: no cover
+        print(BEGIN, END)
 
     with pytest.raises(Exception, match=r"def and parameters should fit on one line"):
         Template(template)
@@ -17,7 +24,7 @@ def test_def_too_long():
 
 def test_def_template():
     def template(BEGIN, END):
-        print(BEGIN, END)  # pragma: no cover
+        print(BEGIN, END)
 
     assert (
         Template(template).fill_values(BEGIN="abc", END="xyz").finish()
@@ -195,7 +202,7 @@ def test_fill_blocks_not_string():
 
 def test_no_root_kwarg_with_function_template():
     def template():
-        pass  # pragma: no cover
+        pass
 
     with pytest.raises(
         Exception,

@@ -39,7 +39,7 @@ from dp_wizard_templates.code_template import Template
 
 
 def conditional_print_template(CONDITION, MESSAGE):
-    if CONDITION:  # pragma: no cover
+    if CONDITION:
         print(MESSAGE)
 
 
@@ -147,7 +147,7 @@ assert assignment == "band = 'Duran' * 2"
 from dp_wizard_templates.converters import convert_py_to_nb, convert_nb_to_html
 
 
-def notebook_template(TITLE, BLOCK, FUNCTION_NAME):  # pragma: no cover
+def notebook_template(TITLE, BLOCK, FUNCTION_NAME):
     # # TITLE
     #
     # Comments will be rendered as *Markdown*.
@@ -200,7 +200,7 @@ notebook_html = convert_nb_to_html(notebook_ipynb)
 #   (`ignore = ["**/templates/"]`) to ignore them.
 # - For template functions, you might have a consistent naming
 #   convention, and configure coverage (`exclude_also = def template_`)
-#   to exclude them as well.
+#   to exclude them as well, or else use `# pragma: no cover`.
 
 # # Coda
 
