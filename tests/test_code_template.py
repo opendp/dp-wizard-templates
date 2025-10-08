@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 from dp_wizard_templates.code_template import Template
 
@@ -144,6 +146,12 @@ def test_fill_comment_block():
     assert filled == "# placeholder"
 
 
+def test_finish_reformat():
+    template = Template("print( 'messy','code!' )#comment")
+    filled = template.finish(reformat=True)
+    assert filled == 'print("messy", "code!")  # comment\n'
+
+
 def test_fill_comment_block_without_comment():
     template = Template("SLOT")
     with pytest.raises(
@@ -183,3 +191,14 @@ def test_fill_blocks_not_string():
         match=r"for 'SOMETHING' slot, expected string, not '123'",
     ):
         template.fill_code_blocks(SOMETHING=123).finish()
+
+
+def test_no_root_kwarg_with_function_template():
+    def template():
+        pass
+
+    with pytest.raises(
+        Exception,
+        match=r"If template is function, root kwarg not allowed",
+    ):
+        Template(template, root=Path("not-allowed"))
