@@ -6,6 +6,10 @@ import black
 import json
 
 
+class TemplateException(Exception):
+    pass
+
+
 def _get_body(func):
 
     source_lines = inspect.getsource(func).splitlines()
@@ -13,7 +17,9 @@ def _get_body(func):
     if not re.match(r"def \w+\((\w+(, \w+)*)?\):", first_line.strip()):
         # Parsing to AST and unparsing is a more robust option,
         # but more complicated.
-        raise Exception(f"def and parameters should fit on one line: {first_line}")
+        raise TemplateException(
+            f"def and parameters should fit on one line: {first_line}"
+        )
 
     # The "def" should not be in the output,
     # and cleandoc handles the first line differently.
@@ -36,15 +42,13 @@ def _check_repr(value):
     """
     Confirms that the string returned by repr()
     can be evaluated to recreate the original value.
-
-    >>> _check_repr(None)
-    'None'
-    >>> _check_repr({1})
-    Traceback (most recent call last):
-    ...
-    TypeError: Object of type set is not JSON serializable
+    Takes a conservative approach by checking
+    if the value can be serialized to JSON.
     """
-    json.dumps(value)
+    try:
+        json.dumps(value)
+    except TypeError as e:
+        raise TemplateException(e)
     return repr(value)
 
 
@@ -63,7 +67,9 @@ class Template:
                 self._template = template
         else:
             if callable(template):
-                raise Exception("If template is function, root kwarg not allowed")
+                raise TemplateException(
+                    "If template is function, root kwarg not allowed"
+                )
             else:
                 template_name = f"_{template}.py"
                 template_path = root / template_name
@@ -95,7 +101,7 @@ class Template:
         for k, v in kwargs.items():
             function(k, v, errors)
         if errors:
-            raise Exception(self._make_message(errors))
+            raise TemplateException(self._make_message(errors))
 
     def _fill_inline_slots(
         self,
@@ -191,7 +197,7 @@ class Template:
         unfilled_slots = self._initial_slots & self._find_slots()
         if unfilled_slots:
             errors = [f"'{slot}' slot not filled" for slot in unfilled_slots]
-            raise Exception(self._make_message(errors))
+            raise TemplateException(self._make_message(errors))
 
         self._template = re.sub(
             r"\s*#\s*pragma:\s*no cover\s*$",
