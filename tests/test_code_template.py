@@ -22,6 +22,26 @@ def test_non_repr_value():
         Template(template).fill_values(VALUE={1, 2, 3})
 
 
+def test_ignore_todo_by_default():
+    def template():
+        print("TODO")
+
+    assert Template(template).finish() == 'print("TODO")'
+
+
+def test_ignore_kwarg():
+    def template():
+        print("IGNORE_ME")
+
+    with pytest.raises(
+        TemplateException,
+        match=r"'IGNORE_ME' slot not filled",
+    ):
+        Template(template).finish()
+
+    assert Template(template, ignore={"IGNORE_ME"}).finish() == 'print("IGNORE_ME")'
+
+
 def test_def_too_long():
     def template(
         BEGIN,

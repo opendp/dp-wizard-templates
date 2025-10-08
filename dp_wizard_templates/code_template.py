@@ -1,4 +1,4 @@
-from typing import Optional, Callable
+from typing import Optional, Callable, Iterable
 from pathlib import Path
 import inspect
 import re
@@ -57,6 +57,7 @@ class Template:
         self,
         template: str | Callable,
         root: Optional[Path] = None,
+        ignore: Iterable[str] = ("TODO",),
     ):
         if root is None:
             if callable(template):
@@ -78,6 +79,7 @@ class Template:
         # We want a list of the initial slots, because substitutions
         # can produce sequences of upper case letters that could be mistaken for slots.
         self._initial_slots = self._find_slots()
+        self._ignore = ignore
 
     def _find_slots(self) -> set[str]:
         # Slots:
@@ -194,7 +196,7 @@ class Template:
         return self
 
     def finish(self, reformat: bool = False) -> str:
-        unfilled_slots = self._initial_slots & self._find_slots()
+        unfilled_slots = (self._initial_slots & self._find_slots()) - set(self._ignore)
         if unfilled_slots:
             errors = [f"'{slot}' slot not filled" for slot in unfilled_slots]
             raise TemplateException(self._make_message(errors))
