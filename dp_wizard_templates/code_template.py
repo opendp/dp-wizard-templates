@@ -1,8 +1,13 @@
-from typing import Optional, Callable
+from typing import Optional, Callable, Iterable
 from pathlib import Path
 import inspect
 import re
 import black
+import json
+
+
+class TemplateException(Exception):
+    pass
 
 
 def _get_body(func):
@@ -12,23 +17,41 @@ def _get_body(func):
     if not re.match(r"def \w+\((\w+(, \w+)*)?\):", first_line.strip()):
         # Parsing to AST and unparsing is a more robust option,
         # but more complicated.
-        raise Exception(f"def and parameters should fit on one line: {first_line}")
+        raise TemplateException(
+            f"def and parameters should fit on one line: {first_line}"
+        )
 
     # The "def" should not be in the output,
     # and cleandoc handles the first line differently.
     source_lines[0] = ""
     body = inspect.cleandoc("\n".join(source_lines))
-    body = re.sub(
-        r"\s*#\s+type:\s+ignore\s*",
-        "\n",
-        body,
-    )
-    body = re.sub(
-        r"\s*#\s+noqa:.+",
-        "",
-        body,
-    )
+    comments_to_strip = [
+        r"\s+#\s+type:\s+ignore\s*",
+        r"\s+#\s+noqa:.+\s*",
+        r"\s+#\s+pragma:\s+no cover\s*",
+    ]
+    for comment_re in comments_to_strip:
+        body = re.sub(
+            comment_re,
+            "\n",
+            body,
+        )
+
     return body
+
+
+def _check_repr(value):
+    """
+    Confirms that the string returned by repr()
+    can be evaluated to recreate the original value.
+    Takes a conservative approach by checking
+    if the value can be serialized to JSON.
+    """
+    try:
+        json.dumps(value)
+    except TypeError as e:
+        raise TemplateException(e)
+    return repr(value)
 
 
 class Template:
@@ -36,6 +59,7 @@ class Template:
         self,
         template: str | Callable,
         root: Optional[Path] = None,
+        ignore: Iterable[str] = ("TODO",),
     ):
         if root is None:
             if callable(template):
@@ -46,7 +70,9 @@ class Template:
                 self._template = template
         else:
             if callable(template):
-                raise Exception("If template is function, root kwarg not allowed")
+                raise TemplateException(
+                    "If template is function, root kwarg not allowed"
+                )
             else:
                 template_name = f"_{template}.py"
                 template_path = root / template_name
@@ -55,6 +81,7 @@ class Template:
         # We want a list of the initial slots, because substitutions
         # can produce sequences of upper case letters that could be mistaken for slots.
         self._initial_slots = self._find_slots()
+        self._ignore = ignore
 
     def _find_slots(self) -> set[str]:
         # Slots:
@@ -78,7 +105,7 @@ class Template:
         for k, v in kwargs.items():
             function(k, v, errors)
         if errors:
-            raise Exception(self._make_message(errors))
+            raise TemplateException(self._make_message(errors))
 
     def _fill_inline_slots(
         self,
@@ -144,7 +171,7 @@ class Template:
         """
         Fill in string or numeric values. `repr` is called before filling.
         """
-        self._fill_inline_slots(stringifier=repr, **kwargs)
+        self._fill_inline_slots(stringifier=_check_repr, **kwargs)
         return self
 
     def fill_code_blocks(self, **kwargs) -> "Template":
@@ -171,17 +198,10 @@ class Template:
         return self
 
     def finish(self, reformat: bool = False) -> str:
-        unfilled_slots = self._initial_slots & self._find_slots()
+        unfilled_slots = (self._initial_slots & self._find_slots()) - set(self._ignore)
         if unfilled_slots:
             errors = [f"'{slot}' slot not filled" for slot in unfilled_slots]
-            raise Exception(self._make_message(errors))
-
-        self._template = re.sub(
-            r"\s*#\s*pragma:\s*no cover\s*$",
-            "",
-            self._template,
-            flags=re.MULTILINE,
-        )
+            raise TemplateException(self._make_message(errors))
 
         if reformat:
             self._template = black.format_str(self._template, mode=black.Mode())
