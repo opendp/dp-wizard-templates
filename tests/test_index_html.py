@@ -200,7 +200,7 @@ notebook_html = convert_nb_to_html(notebook_ipynb)
 #   (`ignore = ["**/templates/"]`) to ignore them.
 # - For template functions, you might have a consistent naming
 #   convention, and configure coverage (`exclude_also = def template_`)
-#   to exclude them as well.
+#   to exclude them as well, or else use `# pragma: no cover`.
 
 # # Coda
 
