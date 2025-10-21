@@ -42,6 +42,20 @@ def test_strip_pragma():
     assert Template(template).finish() == "pass\n"
 
 
+def test_strip_noqa():
+    def template():
+        pass  # noqa: B950 (explanation here!)
+
+    assert Template(template).finish() == "pass\n"
+
+
+def test_strip_type_ignore():
+    def template():
+        pass  # type: ignore
+
+    assert Template(template).finish() == "pass\n"
+
+
 def test_def_too_long():
     def template(
         BEGIN,
