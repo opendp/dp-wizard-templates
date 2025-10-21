@@ -208,6 +208,13 @@ class Template:
             flags=re.MULTILINE,
         )
 
+        self._template = re.sub(
+            r"\s*#\s*pragma:\s*no cover\s*$",
+            "",
+            self._template,
+            flags=re.MULTILINE,
+        )
+
         if reformat:
             self._template = black.format_str(self._template, mode=black.Mode())
 

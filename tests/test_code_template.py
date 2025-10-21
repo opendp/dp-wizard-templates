@@ -4,13 +4,6 @@ import pytest
 from dp_wizard_templates.code_template import Template, TemplateException
 
 
-def test_strip_pragma():
-    def template():
-        pass  # pragma: no cover
-
-    assert Template(template).finish() == "pass"
-
-
 def test_non_repr_value():
     def template(VALUE):
         print(VALUE)
@@ -40,6 +33,13 @@ def test_ignore_kwarg():
         Template(template).finish()
 
     assert Template(template, ignore={"IGNORE_ME"}).finish() == 'print("IGNORE_ME")'
+
+
+def test_strip_pragma():
+    def template():
+        pass  # pragma: no cover
+
+    assert Template(template).finish() == "pass"
 
 
 def test_def_too_long():
