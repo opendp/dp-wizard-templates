@@ -25,16 +25,18 @@ def _get_body(func):
     # and cleandoc handles the first line differently.
     source_lines[0] = ""
     body = inspect.cleandoc("\n".join(source_lines))
-    body = re.sub(
-        r"\s*#\s+type:\s+ignore\s*",
-        "\n",
-        body,
-    )
-    body = re.sub(
-        r"\s*#\s+noqa:.+",
-        "",
-        body,
-    )
+    comments_to_strip = [
+        r"\s+#\s+type:\s+ignore\s*",
+        r"\s+#\s+noqa:.+\s*",
+        r"\s+#\s+pragma:\s+no cover\s*",
+    ]
+    for comment_re in comments_to_strip:
+        body = re.sub(
+            comment_re,
+            "\n",
+            body,
+        )
+
     return body
 
 
@@ -200,20 +202,6 @@ class Template:
         if unfilled_slots:
             errors = [f"'{slot}' slot not filled" for slot in unfilled_slots]
             raise TemplateException(self._make_message(errors))
-
-        self._template = re.sub(
-            r"\s*#\s*pragma:\s*no cover\s*$",
-            "",
-            self._template,
-            flags=re.MULTILINE,
-        )
-
-        self._template = re.sub(
-            r"\s*#\s*pragma:\s*no cover\s*$",
-            "",
-            self._template,
-            flags=re.MULTILINE,
-        )
 
         if reformat:
             self._template = black.format_str(self._template, mode=black.Mode())

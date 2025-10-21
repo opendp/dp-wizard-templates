@@ -39,7 +39,7 @@ def test_strip_pragma():
     def template():
         pass  # pragma: no cover
 
-    assert Template(template).finish() == "pass"
+    assert Template(template).finish() == "pass\n"
 
 
 def test_def_too_long():
