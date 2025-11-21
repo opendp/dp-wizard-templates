@@ -263,7 +263,7 @@ def test_no_root_kwarg_with_function_template():
 
 def test_fill_attributes():
     def template(old):
-        new = old.DO_THIS.NOT_THAT
+        new = old.DO_THIS.NOT_THAT  # noqa: F841
 
     assert (
         Template(template).fill_attributes(DO_THIS="do_this()", NOT_THAT=[]).finish()
