@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.5.0
+
+- fill_attribute_slots() [#24](https://github.com/opendp/dp-wizard-templates/pull/24)
+- Add isort and check precommits in CI [#23](https://github.com/opendp/dp-wizard-templates/pull/23)
+
 ## 0.4.0
 
 - Safer template filling, and option to ignore slots [#20](https://github.com/opendp/dp-wizard-templates/pull/20)
