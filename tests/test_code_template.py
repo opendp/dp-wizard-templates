@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import pytest
@@ -259,3 +260,27 @@ def test_no_root_kwarg_with_function_template():
         match=r"If template is function, root kwarg not allowed",
     ):
         Template(template, root=Path("not-allowed"))
+
+
+def test_fill_attributes():
+    def template(old):
+        new = old.DO_THIS.NOT_THAT  # noqa: F841
+
+    assert (
+        Template(template).fill_attributes(DO_THIS="do_this()", NOT_THAT=[]).finish()
+        == "new = old.do_this()\n"
+    )
+
+
+def test_fill_attributes_error():
+    def template(old):
+        new = old.DO_THIS  # noqa: F841
+
+    with pytest.raises(
+        TemplateException,
+        match=re.escape(
+            "In function template, no '.DO_THAT' slot to delete "
+            "(because replacement is false-y):\nnew = old.DO_THIS\n"
+        ),
+    ):
+        Template(template).fill_attributes(DO_THAT=None).finish()

@@ -123,6 +123,22 @@ class Template:
 
         self._loop_kwargs(function, **kwargs)
 
+    def _fill_attribute_slots(self, **kwargs) -> None:
+        def function(k, v, errors):
+            k_re = re.escape(k)
+            attr_re = rf"\.\b{k_re}\b"
+            self._template, count = re.subn(
+                attr_re, f".{v}" if v else "", self._template
+            )
+            if count == 0:
+                errors.append(
+                    f"no '.{k}' slot to fill with '{v}'"
+                    if v
+                    else f"no '.{k}' slot to delete (because replacement is false-y)"
+                )
+
+        self._loop_kwargs(function, **kwargs)
+
     def _fill_block_slots(
         self,
         prefix_re: str,
@@ -168,6 +184,13 @@ class Template:
         self._fill_inline_slots(stringifier=str, **kwargs)
         return self
 
+    def fill_attributes(self, **kwargs) -> "Template":
+        """
+        Fill in attributes with expressions, or remove leading "." if false-y.
+        """
+        self._fill_attribute_slots(**kwargs)
+        return self
+
     def fill_values(self, **kwargs) -> "Template":
         """
         Fill in string or numeric values. `repr` is called before filling.
@@ -199,6 +222,9 @@ class Template:
         return self
 
     def finish(self, reformat: bool = False) -> str:
+        # The reformat default is False here,
+        # because it is true downstream for notebook generation,
+        # and we don't need to be redundant.
         unfilled_slots = (self._initial_slots & self._find_slots()) - set(self._ignore)
         if unfilled_slots:
             errors = [f"'{slot}' slot not filled" for slot in unfilled_slots]
