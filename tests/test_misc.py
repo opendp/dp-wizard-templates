@@ -8,6 +8,7 @@ import dp_wizard_templates
 tests = {
     "flake8 linting": "flake8 . --count --show-source --statistics",
     "pyright type checking": "pyright",
+    "precommit checks": "pre-commit run --all-files",
 }
 
 
