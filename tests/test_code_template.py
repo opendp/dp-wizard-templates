@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import pytest
@@ -267,5 +268,19 @@ def test_fill_attributes():
 
     assert (
         Template(template).fill_attributes(DO_THIS="do_this()", NOT_THAT=[]).finish()
-        == "new = old.do_this()"
+        == "new = old.do_this()\n"
     )
+
+
+def test_fill_attributes_error():
+    def template(old):
+        new = old.DO_THIS  # noqa: F841
+
+    with pytest.raises(
+        TemplateException,
+        match=re.escape(
+            "In function template, no '.DO_THAT' slot to delete "
+            "(because replacement is false-y):\nnew = old.DO_THIS\n"
+        ),
+    ):
+        Template(template).fill_attributes(DO_THAT=None).finish()

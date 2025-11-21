@@ -26,7 +26,7 @@
 #
 # DP Wizard Templates is an alternative. The templates are themselves Python code,
 # and the slots to fill are all-caps. This convention means that the template
-# itself can be parsed as Python code, so syntax highlighting and linting still works.
+# itself can be parsed as Python code, so syntax highlighting and linting still work.
 #
 #
 # ## Examples: `dp_wizard_templates.code_template`
@@ -58,18 +58,7 @@ assert conditional_print == "if temp_c < 0:\n    print('It is freezing!')"
 # the `inspect` package is used to load its source, and the slots
 # in all-caps are filled. Including a parameter list is optional,
 # but providing args which match the names of your slots can prevent
-# warnings from your IDE.
-#
-# Different methods are available on the `Template` object:
-# - `fill_expressions()` fills the slot with verbatim text.
-#   It can be used for an expression like this, or for variable names.
-# - `fill_values()` fills the slot with the repr of the provided value.
-#   This might be a string, or it might be a list or dict or other
-#   data structure, as long as it has a usable repr.
-# - `finish()` converts the template to a string, and will error
-#   if not all slots have been filled.
-#
-# (The next section will introduce `fill_code_block()` and `fill_comment_block()`.)
+# lint warnings.
 #
 # Templates can also be standalone files. If a `root` parameter is provided,
 # the system will prepend `_` and append `.py` and look for a corresponding file.
@@ -124,6 +113,21 @@ assignment = (
 )
 
 assert assignment == "band = 'Duran' * 2"
+
+# -
+
+# To summarize the available methods:
+
+# +
+
+assert [method for method in dir(Template) if not method.startswith("_")] == [
+    "fill_attributes",  # Removes the preceding period if fill value is false-y
+    "fill_code_blocks",  # Fills multi-line blocks
+    "fill_comment_blocks",  # Fills multi-line comment blocks
+    "fill_expressions",  # Fills expressions verbatim
+    "fill_values",  # Preserves numbers, dicts, and list when filling
+    "finish",  # Call to convered filled Template to strinf
+]
 
 # -
 

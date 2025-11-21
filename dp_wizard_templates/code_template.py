@@ -126,13 +126,16 @@ class Template:
     def _fill_attribute_slots(self, **kwargs) -> None:
         def function(k, v, errors):
             k_re = re.escape(k)
-            if v:
-                self._template, count = re.subn(rf"\b{k_re}\b", str(v), self._template)
-            else:
-                # Remove the leading "." if falsy:
-                self._template, count = re.subn(rf"\.\b{k_re}\b", "", self._template)
+            attr_re = rf"\.\b{k_re}\b"
+            self._template, count = re.subn(
+                attr_re, f".{v}" if v else "", self._template
+            )
             if count == 0:
-                errors.append(f"no '{k}' slot to fill with '{v}'")
+                errors.append(
+                    f"no '.{k}' slot to fill with '{v}'"
+                    if v
+                    else f"no '.{k}' slot to delete (because replacement is false-y)"
+                )
 
         self._loop_kwargs(function, **kwargs)
 

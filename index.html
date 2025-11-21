@@ -7515,7 +7515,7 @@ a.anchor-link {
 </head>
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
 <main>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=c9a9c378">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=dfc630dd">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7539,7 +7539,7 @@ so syntax problems will not be obvious until it is filled in.
 At the other extreme, constructing code via an AST is very low-level.</p>
 <p>DP Wizard Templates is an alternative. The templates are themselves Python code,
 and the slots to fill are all-caps. This convention means that the template
-itself can be parsed as Python code, so syntax highlighting and linting still works.</p>
+itself can be parsed as Python code, so syntax highlighting and linting still work.</p>
 <h2 id="Examples:-dp_wizard_templates.code_template">Examples: <code>dp_wizard_templates.code_template</code><a class="anchor-link" href="#Examples:-dp_wizard_templates.code_template">¶</a></h2><p>There are two modules in this library. We'll look at <code>code_template</code> first.</p>
 </div>
 </div>
@@ -7574,7 +7574,7 @@ itself can be parsed as Python code, so syntax highlighting and linting still wo
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=39e34438">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=0dca3c72">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7584,18 +7584,7 @@ itself can be parsed as Python code, so syntax highlighting and linting still wo
 the <code>inspect</code> package is used to load its source, and the slots
 in all-caps are filled. Including a parameter list is optional,
 but providing args which match the names of your slots can prevent
-warnings from your IDE.</p>
-<p>Different methods are available on the <code>Template</code> object:</p>
-<ul>
-<li><code>fill_expressions()</code> fills the slot with verbatim text.
-It can be used for an expression like this, or for variable names.</li>
-<li><code>fill_values()</code> fills the slot with the repr of the provided value.
-This might be a string, or it might be a list or dict or other
-data structure, as long as it has a usable repr.</li>
-<li><code>finish()</code> converts the template to a string, and will error
-if not all slots have been filled.</li>
-</ul>
-<p>(The next section will introduce <code>fill_code_block()</code> and <code>fill_comment_block()</code>.)</p>
+lint warnings.</p>
 <p>Templates can also be standalone files. If a <code>root</code> parameter is provided,
 the system will prepend <code>_</code> and append <code>.py</code> and look for a corresponding file.
 (The convention of prepending <code>_</code> reminds us that although these files
@@ -7674,6 +7663,40 @@ can be parsed, they should not be imported or executed as-is.)</p>
 <span class="p">)</span>
 
 <span class="k">assert</span> <span class="n">assignment</span> <span class="o">==</span> <span class="s2">"band = 'Duran' * 2"</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=0a74d70f">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>To summarize the available methods:</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=142c5e12">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="k">assert</span> <span class="p">[</span>
+    <span class="n">method</span> <span class="k">for</span> <span class="n">method</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">Template</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">method</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)</span>
+<span class="p">]</span> <span class="o">==</span> <span class="p">[</span>
+    <span class="s2">"fill_attributes"</span><span class="p">,</span>  <span class="c1"># Removes the preceding period if fill value is false-y</span>
+    <span class="s2">"fill_code_blocks"</span><span class="p">,</span>  <span class="c1"># Fills multi-line blocks</span>
+    <span class="s2">"fill_comment_blocks"</span><span class="p">,</span>  <span class="c1"># Fills multi-line comment blocks</span>
+    <span class="s2">"fill_expressions"</span><span class="p">,</span>  <span class="c1"># Fills expressions verbatim</span>
+    <span class="s2">"fill_values"</span><span class="p">,</span>  <span class="c1"># Preserves numbers, dicts, and list when filling</span>
+    <span class="s2">"finish"</span><span class="p">,</span>  <span class="c1"># Call to convered filled Template to strinf</span>
+<span class="p">]</span>
 </pre></div>
 </div>
 </div>
