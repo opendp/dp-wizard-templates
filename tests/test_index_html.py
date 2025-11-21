@@ -126,7 +126,7 @@ assert [method for method in dir(Template) if not method.startswith("_")] == [
     "fill_comment_blocks",  # Fills multi-line comment blocks
     "fill_expressions",  # Fills expressions verbatim
     "fill_values",  # Preserves numbers, dicts, and lists when filling
-    "finish",  # Call to convered filled Template to strinf
+    "finish",  # Check that slots are filled, and return a string
 ]
 
 # -
