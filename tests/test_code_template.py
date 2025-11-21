@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+
 from dp_wizard_templates.code_template import Template, TemplateException
 
 

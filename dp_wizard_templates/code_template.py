@@ -1,9 +1,10 @@
-from typing import Optional, Callable, Iterable
-from pathlib import Path
 import inspect
-import re
-import black
 import json
+import re
+from pathlib import Path
+from typing import Callable, Iterable, Optional
+
+import black
 
 
 class TemplateException(Exception):

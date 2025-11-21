@@ -144,7 +144,7 @@ assert assignment == "band = 'Duran' * 2"
 
 # +
 
-from dp_wizard_templates.converters import convert_py_to_nb, convert_nb_to_html
+from dp_wizard_templates.converters import convert_nb_to_html, convert_py_to_nb
 
 
 def notebook_template(TITLE, BLOCK, FUNCTION_NAME):
