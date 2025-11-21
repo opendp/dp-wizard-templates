@@ -259,3 +259,13 @@ def test_no_root_kwarg_with_function_template():
         match=r"If template is function, root kwarg not allowed",
     ):
         Template(template, root=Path("not-allowed"))
+
+
+def test_fill_attributes():
+    def template(old):
+        new = old.DO_THIS.NOT_THAT
+
+    assert (
+        Template(template).fill_attributes(DO_THIS="do_this()", NOT_THAT=[]).finish()
+        == "new = old.do_this()"
+    )
