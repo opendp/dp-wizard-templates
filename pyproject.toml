@@ -22,3 +22,6 @@ Homepage = "https://opendp.github.io/dp-wizard-templates"
 
 [tool.pyright]
 ignore = ["examples/"]
+
+[tool.isort]
+profile = "black"
