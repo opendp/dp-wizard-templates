@@ -284,3 +284,51 @@ def test_fill_attributes_error():
         ),
     ):
         Template(template).fill_attributes(DO_THAT=None).finish()
+
+
+def test_fill_argument_values():
+    def template(old, FILL_THIS, NOT_THAT):
+        new = old(  # noqa: F841
+            FILL_THIS,
+            NOT_THAT,
+        )
+        print(new)
+
+    assert (
+        Template(template)
+        .fill_argument_values(FILL_THIS=[1, 2, 3], NOT_THAT=[])
+        .finish()
+        == "new = old([1, 2, 3],)\nprint(new)"
+    )
+
+
+def test_fill_argument_expressions():
+    def template(old, FILL_THIS, NOT_THAT):
+        new = old(
+            FILL_THIS,
+            NOT_THAT,
+        )
+        print(new)
+
+    assert (
+        Template(template)
+        .fill_argument_expressions(FILL_THIS="[1, 2, 3]", NOT_THAT=None)
+        .finish()
+        == "new = old([1, 2, 3],)\nprint(new)"
+    )
+
+
+def test_fill_argument_values_error():
+    def template(old, FILL_THIS):
+        old(
+            FILL_THIS,
+        )
+
+    with pytest.raises(
+        TemplateException,
+        match=re.escape(
+            "In function template, no 'XYZ,' slot to delete "
+            "(because replacement is false-y)"
+        ),
+    ):
+        Template(template).fill_argument_values(XYZ=None).finish()

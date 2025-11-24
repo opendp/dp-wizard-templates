@@ -146,7 +146,7 @@ class Template:
     ) -> None:
         def function(k, v, errors):
             k_re = re.escape(k)
-            arg_re = rf"\b{k_re}\b,"
+            arg_re = rf"\s*\b{k_re}\b,\s*"
             self._template, count = re.subn(
                 arg_re, f"{stringifier(v)}," if v else "", self._template
             )
