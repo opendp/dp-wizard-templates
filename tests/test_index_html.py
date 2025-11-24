@@ -121,6 +121,8 @@ assert assignment == "band = 'Duran' * 2"
 # +
 
 assert [method for method in dir(Template) if not method.startswith("_")] == [
+    "fill_argument_expressions",  # Fills expressions, or removes trailing comma if false-y
+    "fill_argument_values",  # Fills values, or removes trailing comma if false-y
     "fill_attributes",  # Removes the preceding period if fill value is false-y
     "fill_code_blocks",  # Fills multi-line blocks
     "fill_comment_blocks",  # Fills multi-line comment blocks

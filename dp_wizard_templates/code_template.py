@@ -139,6 +139,26 @@ class Template:
 
         self._loop_kwargs(function, **kwargs)
 
+    def _fill_argument_slots(
+        self,
+        stringifier: Callable[[str], str],
+        **kwargs,
+    ) -> None:
+        def function(k, v, errors):
+            k_re = re.escape(k)
+            arg_re = rf"\b{k_re}\b,"
+            self._template, count = re.subn(
+                arg_re, f"{stringifier(v)}," if v else "", self._template
+            )
+            if count == 0:
+                errors.append(
+                    f"no '{k},' slot to fill with '{v}'"
+                    if v
+                    else f"no '{k},' slot to delete (because replacement is false-y)"
+                )
+
+        self._loop_kwargs(function, **kwargs)
+
     def _fill_block_slots(
         self,
         prefix_re: str,
@@ -189,6 +209,20 @@ class Template:
         Fill in attributes with expressions, or remove leading "." if false-y.
         """
         self._fill_attribute_slots(**kwargs)
+        return self
+
+    def fill_argument_expressions(self, **kwargs) -> "Template":
+        """
+        Fill in argument expressions, or removing trailing "," if false-y.
+        """
+        self._fill_argument_slots(stringifier=str, **kwargs)
+        return self
+
+    def fill_argument_values(self, **kwargs) -> "Template":
+        """
+        Fill in argument values, or removing trailing "," if false-y.
+        """
+        self._fill_argument_slots(stringifier=_check_repr, **kwargs)
         return self
 
     def fill_values(self, **kwargs) -> "Template":
