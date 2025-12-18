@@ -56,6 +56,8 @@ def _check_repr(value):
 
 
 class Template:
+    _slot_re = r"\b[A-Z][A-Z_]{2,}\b"
+
     def __init__(
         self,
         template: str | Callable,
@@ -89,13 +91,22 @@ class Template:
         # - are all caps or underscores
         # - have word boundary on either side
         # - are at least three characters
-        slot_re = r"\b[A-Z][A-Z_]{2,}\b"
-        return set(re.findall(slot_re, self._template))
+        return set(re.findall(self._slot_re, self._template))
 
     def _make_message(self, errors: list[str]) -> str:
         return (
             f"In {self._source}, " + ", ".join(sorted(errors)) + f":\n{self._template}"
         )
+
+    def _validate_kwargs(self, kwarg_keys: Iterable[str]) -> None:
+        errors = []
+        for k in kwarg_keys:
+            if not re.fullmatch(self._slot_re, k):
+                errors.append(f'kwarg "{k}" is not a valid slot')
+        if errors:
+            raise TemplateException(
+                "; ".join(errors) + f'. Should match "{self._slot_re}".'
+            )
 
     def _loop_kwargs(
         self,
@@ -201,6 +212,7 @@ class Template:
         """
         Fill in variable names, or dicts or lists represented as strings.
         """
+        self._validate_kwargs(kwargs.keys())
         self._fill_inline_slots(stringifier=str, **kwargs)
         return self
 
@@ -208,6 +220,7 @@ class Template:
         """
         Fill in attributes with expressions, or remove leading "." if false-y.
         """
+        self._validate_kwargs(kwargs.keys())
         self._fill_attribute_slots(**kwargs)
         return self
 
@@ -215,6 +228,7 @@ class Template:
         """
         Fill in argument expressions, or removing trailing "," if false-y.
         """
+        self._validate_kwargs(kwargs.keys())
         self._fill_argument_slots(stringifier=str, **kwargs)
         return self
 
@@ -222,6 +236,7 @@ class Template:
         """
         Fill in argument values, or removing trailing "," if false-y.
         """
+        self._validate_kwargs(kwargs.keys())
         self._fill_argument_slots(stringifier=_check_repr, **kwargs)
         return self
 
@@ -229,6 +244,7 @@ class Template:
         """
         Fill in string or numeric values. `repr` is called before filling.
         """
+        self._validate_kwargs(kwargs.keys())
         self._fill_inline_slots(stringifier=_check_repr, **kwargs)
         return self
 
@@ -236,6 +252,7 @@ class Template:
         """
         Fill in code blocks. Slot must be alone on line.
         """
+        self._validate_kwargs(kwargs.keys())
 
         def splitter(s):
             return s.split("\n")
@@ -247,6 +264,7 @@ class Template:
         """
         Fill in comment blocks. Slot must be commented.
         """
+        self._validate_kwargs(kwargs.keys())
 
         def splitter(s):
             stripped = [line.strip() for line in s.split("\n")]

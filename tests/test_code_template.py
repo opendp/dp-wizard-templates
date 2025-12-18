@@ -332,3 +332,15 @@ def test_fill_argument_values_error():
         ),
     ):
         Template(template).fill_argument_values(XYZ=None).finish()
+
+
+def test_lc_kwarg_error():
+    # This only tests one fill_* method: Could be stronger.
+    def template(FILL_THIS):
+        print(FILL_THIS)
+
+    with pytest.raises(
+        TemplateException,
+        match=re.escape('kwarg "FILL_this" is not a valid slot. Should match'),
+    ):
+        Template(template).fill_values(FILL_this="nope").finish()
