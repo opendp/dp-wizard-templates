@@ -7515,12 +7515,20 @@ a.anchor-link {
 </head>
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
 <main>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=dfc630dd">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=258fa444">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<!--
+`test_index_html.py` is weird!
+
+It doesn't contain any unit tests, per se, but it is executed as part of test discovery.
+Besides making assertions about the results of template fills,
+it runs itself through `convert_nb_to_html`, and updates the Github Pages `index.html`.
+If there are changes, it will fail... but the next test run will pass.
+-->
 <h1 id="DP-Wizard-Templates">DP Wizard Templates<a class="anchor-link" href="#DP-Wizard-Templates">¶</a></h1><p><a href="https://github.com/opendp/dp-wizard-templates">github</a> | <a href="https://pypi.org/project/dp_wizard_templates/">pypi</a> | <a href="https://opendp.github.io/dp-wizard-templates">docs</a> (this page)</p>
 <p>DP Wizard Templates helps you build Python code from templates
 which are themselves syntactically valid Python.
