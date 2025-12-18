@@ -55,8 +55,35 @@ def _check_repr(value):
     return repr(value)
 
 
+_slot_re = r"\b[A-Z][A-Z_]{2,}\b"
+
+
+def _check_kwargs(func):
+    def wrapper(*args, **kwargs):
+        unless = "unless"
+        errors = []
+        for k in kwargs.keys():
+            if k in args[0]._ignore:
+                errors.append(f'kwarg "{k}" is an ignored slot name')
+            if not (re.fullmatch(_slot_re, k) or k == unless):
+                errors.append(f'kwarg "{k}" is not a valid slot name')
+        if errors:
+            raise TemplateException(
+                "; ".join(errors)
+                + f'. Slots should match "{_slot_re}". '
+                + "Some slots are ignored, and should not be filled: "
+                + ",".join(f'"{v}"' for v in args[0]._ignore)
+            )
+        if kwargs.get(unless, False):
+            # return self:
+            return args[0]
+        kwargs.pop(unless, None)
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
 class Template:
-    _slot_re = r"\b[A-Z][A-Z_]{2,}\b"
 
     def __init__(
         self,
@@ -91,22 +118,12 @@ class Template:
         # - are all caps or underscores
         # - have word boundary on either side
         # - are at least three characters
-        return set(re.findall(self._slot_re, self._template))
+        return set(re.findall(_slot_re, self._template))
 
     def _make_message(self, errors: list[str]) -> str:
         return (
             f"In {self._source}, " + ", ".join(sorted(errors)) + f":\n{self._template}"
         )
-
-    def _validate_kwargs(self, kwarg_keys: Iterable[str]) -> None:
-        errors = []
-        for k in kwarg_keys:
-            if not re.fullmatch(self._slot_re, k):
-                errors.append(f'kwarg "{k}" is not a valid slot')
-        if errors:
-            raise TemplateException(
-                "; ".join(errors) + f'. Should match "{self._slot_re}".'
-            )
 
     def _loop_kwargs(
         self,
@@ -208,51 +225,51 @@ class Template:
 
         self._loop_kwargs(function, **kwargs)
 
+    @_check_kwargs
     def fill_expressions(self, **kwargs) -> "Template":
         """
         Fill in variable names, or dicts or lists represented as strings.
         """
-        self._validate_kwargs(kwargs.keys())
         self._fill_inline_slots(stringifier=str, **kwargs)
         return self
 
+    @_check_kwargs
     def fill_attributes(self, **kwargs) -> "Template":
         """
         Fill in attributes with expressions, or remove leading "." if false-y.
         """
-        self._validate_kwargs(kwargs.keys())
         self._fill_attribute_slots(**kwargs)
         return self
 
+    @_check_kwargs
     def fill_argument_expressions(self, **kwargs) -> "Template":
         """
         Fill in argument expressions, or removing trailing "," if false-y.
         """
-        self._validate_kwargs(kwargs.keys())
         self._fill_argument_slots(stringifier=str, **kwargs)
         return self
 
+    @_check_kwargs
     def fill_argument_values(self, **kwargs) -> "Template":
         """
         Fill in argument values, or removing trailing "," if false-y.
         """
-        self._validate_kwargs(kwargs.keys())
         self._fill_argument_slots(stringifier=_check_repr, **kwargs)
         return self
 
+    @_check_kwargs
     def fill_values(self, **kwargs) -> "Template":
         """
         Fill in string or numeric values. `repr` is called before filling.
         """
-        self._validate_kwargs(kwargs.keys())
         self._fill_inline_slots(stringifier=_check_repr, **kwargs)
         return self
 
+    @_check_kwargs
     def fill_code_blocks(self, **kwargs) -> "Template":
         """
         Fill in code blocks. Slot must be alone on line.
         """
-        self._validate_kwargs(kwargs.keys())
 
         def splitter(s):
             return s.split("\n")
@@ -260,11 +277,11 @@ class Template:
         self._fill_block_slots(prefix_re=r"", splitter=splitter, **kwargs)
         return self
 
+    @_check_kwargs
     def fill_comment_blocks(self, **kwargs) -> "Template":
         """
         Fill in comment blocks. Slot must be commented.
         """
-        self._validate_kwargs(kwargs.keys())
 
         def splitter(s):
             stripped = [line.strip() for line in s.split("\n")]

@@ -47,10 +47,10 @@ conditional_print = (
     Template(conditional_print_template)
     .fill_expressions(CONDITION="temp_c < 0")
     .fill_values(MESSAGE="It is freezing!")
-    .finish()
+    .finish(reformat=True)
 )
 
-assert conditional_print == "if temp_c < 0:\n    print('It is freezing!')"
+assert conditional_print == 'if temp_c < 0:\n    print("It is freezing!")\n'
 
 # -
 
@@ -75,28 +75,19 @@ block_demo = (
     Template("block_demo", root=root / "examples")
     .fill_expressions(FUNCTION_NAME="freeze_warning", PARAMS="temp_c")
     .fill_code_blocks(INNER_BLOCK=conditional_print)
-    .fill_comment_blocks(
-        COMMENT="""
-        Water freezes at:
-        32 Fahrenheit
-        0 Celsius
-        """
-    )
     .finish()
 )
 
 assert (
-    block_demo
-    == '''def freeze_warning(temp_c):
+    block_demo.strip()
+    == '''
+def freeze_warning(temp_c):
     """
     This demonstrates how larger blocks of code can be built compositionally.
     """
-    # Water freezes at:
-    # 32 Fahrenheit
-    # 0 Celsius
     if temp_c < 0:
-        print('It is freezing!')
-'''
+        print("It is freezing!")
+    '''.strip()
 )
 
 # -
@@ -113,6 +104,24 @@ assignment = (
 )
 
 assert assignment == "band = 'Duran' * 2"
+
+# -
+
+# In addition to slot names as kwargs, `unless` can also be used to make the fill
+# conditional. This can be be more readable than adding ternary expressions
+# or conditional blocks around the template code.
+
+# +
+
+is_pm = True
+greeting = (
+    Template("print('Good TIME!')")
+    .fill_expressions(TIME="morning", unless=is_pm)
+    .fill_expressions(TIME="evening", unless=not is_pm)
+    .finish()
+)
+
+assert greeting == "print('Good evening!')"
 
 # -
 
