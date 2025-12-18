@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.6.0
+
+- ignore spurious warning [#33](https://github.com/opendp/dp-wizard-templates/pull/33)
+- `unless` kwarg [#32](https://github.com/opendp/dp-wizard-templates/pull/32)
+- Warn if lower case kwargs [#31](https://github.com/opendp/dp-wizard-templates/pull/31)
+- `fill_argument_expressions` and `fill_argument_values` [#27](https://github.com/opendp/dp-wizard-templates/pull/27)
+
 ## 0.5.0
 
 - fill_attribute_slots() [#24](https://github.com/opendp/dp-wizard-templates/pull/24)
