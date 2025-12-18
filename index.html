@@ -7544,7 +7544,7 @@ itself can be parsed as Python code, so syntax highlighting and linting still wo
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=62140d41">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=5cf5081f">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7564,10 +7564,12 @@ itself can be parsed as Python code, so syntax highlighting and linting still wo
     <span class="n">Template</span><span class="p">(</span><span class="n">conditional_print_template</span><span class="p">)</span>
     <span class="o">.</span><span class="n">fill_expressions</span><span class="p">(</span><span class="n">CONDITION</span><span class="o">=</span><span class="s2">"temp_c &lt; 0"</span><span class="p">)</span>
     <span class="o">.</span><span class="n">fill_values</span><span class="p">(</span><span class="n">MESSAGE</span><span class="o">=</span><span class="s2">"It is freezing!"</span><span class="p">)</span>
-    <span class="o">.</span><span class="n">finish</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">finish</span><span class="p">(</span><span class="n">reformat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="p">)</span>
 
-<span class="k">assert</span> <span class="n">conditional_print</span> <span class="o">==</span> <span class="s2">"if temp_c &lt; 0:</span><span class="se">\n</span><span class="s2">    print('It is freezing!')"</span>
+<span class="k">assert</span> <span class="p">(</span>
+    <span class="n">conditional_print</span> <span class="o">==</span> <span class="s1">'if temp_c &lt; 0:</span><span class="se">\n</span><span class="s1">    print("It is freezing!")</span><span class="se">\n</span><span class="s1">'</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -7592,7 +7594,7 @@ can be parsed, they should not be imported or executed as-is.)</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=c3374f03">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=d8795356">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7608,28 +7610,19 @@ can be parsed, they should not be imported or executed as-is.)</p>
     <span class="n">Template</span><span class="p">(</span><span class="s2">"block_demo"</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">root</span> <span class="o">/</span> <span class="s2">"examples"</span><span class="p">)</span>
     <span class="o">.</span><span class="n">fill_expressions</span><span class="p">(</span><span class="n">FUNCTION_NAME</span><span class="o">=</span><span class="s2">"freeze_warning"</span><span class="p">,</span> <span class="n">PARAMS</span><span class="o">=</span><span class="s2">"temp_c"</span><span class="p">)</span>
     <span class="o">.</span><span class="n">fill_code_blocks</span><span class="p">(</span><span class="n">INNER_BLOCK</span><span class="o">=</span><span class="n">conditional_print</span><span class="p">)</span>
-    <span class="o">.</span><span class="n">fill_comment_blocks</span><span class="p">(</span>
-        <span class="n">COMMENT</span><span class="o">=</span><span class="s2">"""</span>
-<span class="s2">        Water freezes at:</span>
-<span class="s2">        32 Fahrenheit</span>
-<span class="s2">        0 Celsius</span>
-<span class="s2">        """</span>
-    <span class="p">)</span>
     <span class="o">.</span><span class="n">finish</span><span class="p">()</span>
 <span class="p">)</span>
 
 <span class="k">assert</span> <span class="p">(</span>
-    <span class="n">block_demo</span>
-    <span class="o">==</span> <span class="s1">'''def freeze_warning(temp_c):</span>
+    <span class="n">block_demo</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="o">==</span> <span class="s1">'''</span>
+<span class="s1">def freeze_warning(temp_c):</span>
 <span class="s1">    """</span>
 <span class="s1">    This demonstrates how larger blocks of code can be built compositionally.</span>
 <span class="s1">    """</span>
-<span class="s1">    # Water freezes at:</span>
-<span class="s1">    # 32 Fahrenheit</span>
-<span class="s1">    # 0 Celsius</span>
 <span class="s1">    if temp_c &lt; 0:</span>
-<span class="s1">        print('It is freezing!')</span>
-<span class="s1">'''</span>
+<span class="s1">        print("It is freezing!")</span>
+<span class="s1">    '''</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -7663,6 +7656,41 @@ can be parsed, they should not be imported or executed as-is.)</p>
 <span class="p">)</span>
 
 <span class="k">assert</span> <span class="n">assignment</span> <span class="o">==</span> <span class="s2">"band = 'Duran' * 2"</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b9b6c748">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>In addition to slot names as kwargs, <code>unless</code> can also be used to make the fill
+conditional. This can be be more readable than adding ternary expressions
+or conditional blocks around the template code.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=e98734c4">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">is_pm</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">greeting</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">Template</span><span class="p">(</span><span class="s2">"print('Good TIME!')"</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">fill_expressions</span><span class="p">(</span><span class="n">TIME</span><span class="o">=</span><span class="s2">"morning"</span><span class="p">,</span> <span class="n">unless</span><span class="o">=</span><span class="n">is_pm</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">fill_expressions</span><span class="p">(</span><span class="n">TIME</span><span class="o">=</span><span class="s2">"evening"</span><span class="p">,</span> <span class="n">unless</span><span class="o">=</span><span class="ow">not</span> <span class="n">is_pm</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">finish</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="k">assert</span> <span class="n">greeting</span> <span class="o">==</span> <span class="s2">"print('Good evening!')"</span>
 </pre></div>
 </div>
 </div>
