@@ -8,7 +8,6 @@ from tempfile import TemporaryDirectory
 import black
 import jupytext
 import nbconvert
-import nbformat
 
 
 def _is_kernel_installed() -> bool:
@@ -106,7 +105,15 @@ def _clean_nb(nb_json: str) -> str:
 
 
 def convert_nb_to_html(python_nb: str, numbered=True) -> str:
-    notebook = nbformat.reads(python_nb, as_version=4)
+    import warnings
+
+    import nbformat.warnings
+
+    with warnings.catch_warnings():
+        warnings.simplefilter(
+            action="ignore", category=nbformat.warnings.DuplicateCellId
+        )
+        notebook = nbformat.reads(python_nb, as_version=4)
     exporter = nbconvert.HTMLExporter(
         template_name="lab",
         # The "classic" template's CSS forces large code cells on to
