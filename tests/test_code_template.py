@@ -345,7 +345,6 @@ def test_fill_argument_values_error():
 
 
 def test_lc_kwarg_error():
-    # This only tests one fill_* method: Could be stronger.
     def template(FILL_THIS):
         print(FILL_THIS)
 
@@ -354,3 +353,26 @@ def test_lc_kwarg_error():
         match=re.escape('kwarg "FILL_this" is not a valid slot name'),
     ):
         Template(template).fill_values(FILL_this="nope").finish()
+
+
+def test_unless_falsey():
+    def template(FILL):
+        print(FILL)
+
+    assert (
+        Template(template).fill_values(FILL="hello!", unless=0).finish()
+        == "print('hello!')"
+    )
+
+
+def test_unless_truey():
+    def template(FILL):
+        print(FILL)
+
+    assert (
+        Template(template)
+        .fill_values(FILL="hello!", unless=1)
+        .fill_values(FILL="goodbye!")
+        .finish()
+        == "print('goodbye!')"
+    )

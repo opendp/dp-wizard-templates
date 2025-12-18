@@ -60,11 +60,12 @@ _slot_re = r"\b[A-Z][A-Z_]{2,}\b"
 
 def _check_kwargs(func):
     def wrapper(*args, **kwargs):
+        unless = "unless"
         errors = []
         for k in kwargs.keys():
             if k in args[0]._ignore:
                 errors.append(f'kwarg "{k}" is an ignored slot name')
-            if not (re.fullmatch(_slot_re, k) or k == "if"):
+            if not (re.fullmatch(_slot_re, k) or k == unless):
                 errors.append(f'kwarg "{k}" is not a valid slot name')
         if errors:
             raise TemplateException(
@@ -73,8 +74,10 @@ def _check_kwargs(func):
                 + "Some slots are ignored, and should not be filled: "
                 + ",".join(f'"{v}"' for v in args[0]._ignore)
             )
-        if not kwargs.get("if", True):
+        if kwargs.get(unless, False):
+            # return self:
             return args[0]
+        kwargs.pop(unless, None)
         return func(*args, **kwargs)
 
     return wrapper
