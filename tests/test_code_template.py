@@ -24,6 +24,16 @@ def test_ignore_todo_by_default():
     assert Template(template).finish() == 'print("TODO")'
 
 
+def test_todo_kwarg():
+    def template():
+        print("hello")  # TODO: add "world"
+
+    with pytest.raises(
+        TemplateException, match=re.escape('kwarg "TODO" is an ignored slot name')
+    ):
+        Template(template).fill_values(TODO="should not work")
+
+
 def test_ignore_kwarg():
     def template():
         print("IGNORE_ME")
@@ -341,6 +351,6 @@ def test_lc_kwarg_error():
 
     with pytest.raises(
         TemplateException,
-        match=re.escape('kwarg "FILL_this" is not a valid slot. Should match'),
+        match=re.escape('kwarg "FILL_this" is not a valid slot name'),
     ):
         Template(template).fill_values(FILL_this="nope").finish()
