@@ -355,24 +355,25 @@ def test_lc_kwarg_error():
         Template(template).fill_values(FILL_this="nope").finish()
 
 
-def test_unless_falsey():
+def test_when_true():
     def template(FILL):
         print(FILL)
 
     assert (
-        Template(template).fill_values(FILL="hello!", unless=0).finish()
+        Template(template).fill_values(FILL="hello!", when=1).finish()
         == "print('hello!')"
     )
 
 
-def test_unless_truey():
+def test_when_false():
     def template(FILL):
         print(FILL)
 
     assert (
         Template(template)
-        .fill_values(FILL="hello!", unless=1)
+        .fill_values(FILL="hello!", when=0)
         .fill_values(FILL="goodbye!")
+        .fill_values(FILL="redundant!", when=0)
         .finish()
         == "print('goodbye!')"
     )
