@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.7.0
+
+- unless -> when [#35](https://github.com/opendp/dp-wizard-templates/pull/35)
+
 ## 0.6.0
 
 - ignore spurious warning [#33](https://github.com/opendp/dp-wizard-templates/pull/33)
