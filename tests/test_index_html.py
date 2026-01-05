@@ -115,7 +115,7 @@ assert assignment == "band = 'Duran' * 2"
 
 # -
 
-# In addition to slot names as kwargs, `unless` can also be used to make the fill
+# In addition to slot names as kwargs, `when` can also be used to make the fill
 # conditional. This can be be more readable than adding ternary expressions
 # or conditional blocks around the template code.
 
@@ -124,8 +124,8 @@ assert assignment == "band = 'Duran' * 2"
 is_pm = True
 greeting = (
     Template("print('Good TIME!')")
-    .fill_expressions(TIME="morning", unless=is_pm)
-    .fill_expressions(TIME="evening", unless=not is_pm)
+    .fill_expressions(TIME="morning", when=not is_pm)
+    .fill_expressions(TIME="evening", when=is_pm)
     .finish()
 )
 
