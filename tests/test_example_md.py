@@ -1,14 +1,16 @@
 # <!--
 # `test_index_html.py` is weird!
 #
-# It doesn't contain any unit tests, per se, but it is executed as part of test discovery.
+# It doesn't contain any unit tests, per se,
+# but it is executed as part of test discovery.
 # Besides making assertions about the results of template fills,
-# it runs itself through `convert_nb_to_html`, and updates the Github Pages `index.html`.
+# it runs itself through `convert_nb_to_md()`, and updates example.md.
 # If there are changes, it will fail... but the next test run will pass.
 # -->
-# # DP Wizard Templates
 #
-# [github](https://github.com/opendp/dp-wizard-templates) | [pypi](https://pypi.org/project/dp_wizard_templates/) | [docs](https://opendp.github.io/dp-wizard-templates) (this page)
+# [github](https://github.com/opendp/dp-wizard-templates)
+# | [pypi](https://pypi.org/project/dp_wizard_templates/)
+# | [docs](https://opendp.github.io/dp-wizard-templates) (this page)
 #
 # DP Wizard Templates helps you build Python code from templates
 # which are themselves syntactically valid Python.
@@ -37,7 +39,7 @@
 # itself can be parsed as Python code, so syntax highlighting and linting still work.
 #
 #
-# ## Examples: `dp_wizard_templates.code_template`
+# ## Examples: dp_wizard_templates.code_template
 #
 # There are two modules in this library. We'll look at `code_template` first.
 
@@ -75,7 +77,7 @@ assert conditional_print == 'if temp_c < 0:\n    print("It is freezing!")\n'
 
 # +
 
-from pathlib import Path
+from pathlib import Path  # noqa: E402
 
 root = Path(__file__).parent.parent
 
@@ -146,14 +148,15 @@ assert [method for method in dir(Template) if not method.startswith("_")] == [
 
 # -
 
-# ## Examples: `dp_wizard_templates.converters`
+# ## Examples: dp_wizard_templates.converters
 #
 # DP Wizard Templates also includes utilities to convert Python code
 # to notebooks, and to convert notebooks to HTML. It is a thin wrapper
 # which provides default settings for `nbconvert` and `jupytext`.
 #
 # The Python code is converted to a notebook using the
-# [jupytext light format](https://jupytext.readthedocs.io/en/latest/formats-scripts.html#the-light-format):
+# [jupytext light
+# format](https://jupytext.readthedocs.io/en/latest/formats-scripts.html#the-light-format):
 # Contiguous comments are coverted to markdown cells,
 # and contiguous lines of code are converted to code cells.
 #
@@ -163,7 +166,11 @@ assert [method for method in dir(Template) if not method.startswith("_")] == [
 
 # +
 
-from dp_wizard_templates.converters import convert_nb_to_html, convert_py_to_nb
+from dp_wizard_templates.converters import (  # noqa: E402
+    convert_nb_to_html,
+    convert_nb_to_md,
+    convert_py_to_nb,
+)
 
 
 def notebook_template(TITLE, BLOCK, FUNCTION_NAME):
@@ -227,15 +234,13 @@ notebook_html = convert_nb_to_html(notebook_ipynb)
 
 readme_test_py = Path(__file__).read_text()
 
-html_path = root / "index.html"
-before_hash = hash(html_path.read_text())
+md_path = root / "example.md"
+before_hash = hash(md_path.read_text())
 
-html = convert_nb_to_html(
-    convert_py_to_nb(readme_test_py, "DP Wizard Templates"), numbered=False
-)
-(html_path).write_text(html)
+md = convert_nb_to_md(convert_py_to_nb(readme_test_py, "DP Wizard Templates"))
+(md_path).write_text(md)
 
-after_hash = hash(html_path.read_text())
+after_hash = hash(md_path.read_text())
 assert (
     before_hash == after_hash
-), "index.html has changed: If that is intended, the next test run should pass."
+), "example.md has changed: If that is intended, the next test run should pass."

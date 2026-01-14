@@ -6,10 +6,10 @@ import pytest
 from dp_wizard_templates.code_template import (
     Template,
     TemplateException,
-    Token,
     _line_re,
     _slot_re,
     _Slots,
+    _Token,
 )
 
 
@@ -40,10 +40,10 @@ def test_slot_re():
 def test_slots_fill_inline():
     slots = _Slots("START and END")
     assert slots._tokens == [
-        Token(string="", is_slot=False, is_prefix=True),
-        Token(string="START", is_slot=True, is_prefix=False),
-        Token(string=" and ", is_slot=False, is_prefix=False),
-        Token(string="END", is_slot=True, is_prefix=False),
+        _Token(string="", is_slot=False, is_prefix=True),
+        _Token(string="START", is_slot=True, is_prefix=False),
+        _Token(string=" and ", is_slot=False, is_prefix=False),
+        _Token(string="END", is_slot=True, is_prefix=False),
     ]
     slots.fill_inline("START", "END")
     slots.fill_inline("END", "START")
@@ -58,16 +58,16 @@ CODE
     # COMMENT"""
     )
     assert slots._tokens == [
-        Token(string="", is_slot=False, is_prefix=True),
-        Token(string="intro\n", is_slot=False, is_prefix=False),
-        Token(string="", is_slot=False, is_prefix=True),
-        Token(string="CODE", is_slot=True, is_prefix=False),
-        Token(string="\n", is_slot=False, is_prefix=False),
-        Token(string="    ", is_slot=False, is_prefix=True),
-        Token(string="INDENTED", is_slot=True, is_prefix=False),
-        Token(string="\n", is_slot=False, is_prefix=False),
-        Token(string="    # ", is_slot=False, is_prefix=True),
-        Token(string="COMMENT", is_slot=True, is_prefix=False),
+        _Token(string="", is_slot=False, is_prefix=True),
+        _Token(string="intro\n", is_slot=False, is_prefix=False),
+        _Token(string="", is_slot=False, is_prefix=True),
+        _Token(string="CODE", is_slot=True, is_prefix=False),
+        _Token(string="\n", is_slot=False, is_prefix=False),
+        _Token(string="    ", is_slot=False, is_prefix=True),
+        _Token(string="INDENTED", is_slot=True, is_prefix=False),
+        _Token(string="\n", is_slot=False, is_prefix=False),
+        _Token(string="    # ", is_slot=False, is_prefix=True),
+        _Token(string="COMMENT", is_slot=True, is_prefix=False),
     ]
     slots.fill_block("CODE", "if 'hello world':")
     slots.fill_block("INDENTED", "if foo:\n    bar()")
@@ -391,4 +391,35 @@ def test_optional():
     assert (
         Template(template).fill_expressions(VERSION="1.2.3.4", optional=True).finish()
         == "print(2 + 2)"
+    )
+
+
+def test_default_idiom():
+    def fill_defaults(template: Template):
+        return template.fill_expressions(VERSION="0.1.2.3", optional=True)
+
+    def template_without(ARG):
+        print(ARG)
+
+    def template_with(ARG):
+        # Version: VERSION
+        print(ARG)
+
+    assert (
+        fill_defaults(Template(template_without).fill_values(ARG="hello")).finish()
+        == "print('hello')"
+    )
+
+    assert (
+        fill_defaults(Template(template_with).fill_values(ARG="hello")).finish()
+        == "# Version: 0.1.2.3\nprint('hello')"
+    )
+
+    assert (
+        fill_defaults(
+            Template(template_with)
+            .fill_values(ARG="hello")
+            .fill_expressions(VERSION="1.0")
+        ).finish()
+        == "# Version: 1.0\nprint('hello')"
     )

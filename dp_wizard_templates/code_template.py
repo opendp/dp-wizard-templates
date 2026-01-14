@@ -9,6 +9,8 @@ import black
 
 
 class TemplateException(Exception):
+    """Used for exceptions during template construction and fill."""
+
     pass
 
 
@@ -82,7 +84,7 @@ def _check_kwargs(func):
     return wrapper
 
 
-Token = namedtuple("Token", ["string", "is_slot", "is_prefix"])
+_Token = namedtuple("_Token", ["string", "is_slot", "is_prefix"])
 
 
 _line_re = re.compile(r"(^[ \t]*(?:#\s*)?)", flags=re.MULTILINE)
@@ -97,13 +99,13 @@ class _Slots:
             if i % 2 == 1:
                 # Include prefix, even if empty string.
                 self._tokens.append(
-                    Token(line_substring, is_prefix=True, is_slot=False)
+                    _Token(line_substring, is_prefix=True, is_slot=False)
                 )
             else:
                 for j, slot_substring in enumerate(_slot_re.split(line_substring)):
                     if slot_substring:
                         self._tokens.append(
-                            Token(slot_substring, is_prefix=False, is_slot=j % 2 == 1)
+                            _Token(slot_substring, is_prefix=False, is_slot=j % 2 == 1)
                         )
 
     def _fill(
@@ -114,7 +116,7 @@ class _Slots:
             if self._tokens[i].is_slot and self._tokens[i].string == slot_name:
                 found_match = True
                 if fill_inline:
-                    self._tokens[i] = Token(
+                    self._tokens[i] = _Token(
                         new_value,
                         is_prefix=False,
                         is_slot=False,
@@ -124,7 +126,7 @@ class _Slots:
                     if not prev.is_prefix:
                         raise TemplateException("expected prefix")
                     prefix = prev.string
-                    self._tokens[i] = Token(
+                    self._tokens[i] = _Token(
                         f"\n{prefix}".join(new_value.splitlines()),
                         is_prefix=False,
                         is_slot=False,
@@ -157,6 +159,14 @@ class _Slots:
 
 
 class Template:
+    """
+    For all `fill_*` methods, all-caps kwargs should match slots in the template.
+
+    Additionally:
+    - With `when=False` slot filling will be skipped.
+      This allows method chaining that is more readable than using `if`.
+    - With `optional=True` there will be no exceptions for missing slots.
+    """
 
     def __init__(
         self,
@@ -164,6 +174,17 @@ class Template:
         root: Optional[Path] = None,
         ignore: Iterable[str] = ("TODO",),
     ):
+        """
+        If called without `root`, either a function or
+        a string literal `template` can be given.
+
+        If called with a `root` path, `template` is
+        prefixed with "_" and suffixed with ".py"
+        and the corresponding file is read.
+
+        Use `ignore` to specify all-caps strings
+        which should not be treated as slots.
+        """
         if root is None:
             if callable(template):
                 self._source = "function template"
@@ -237,7 +258,7 @@ class Template:
     @_check_kwargs
     def fill_expressions(self, optional=False, **kwargs) -> "Template":
         """
-        Fill in variable names, or dicts or lists represented as strings.
+        Fill in variable names, anything else that should be filled verbatim.
         """
         self._fill_inline_slots(stringifier=str, optional=optional, **kwargs)
         return self
@@ -245,7 +266,7 @@ class Template:
     @_check_kwargs
     def fill_values(self, optional=False, **kwargs) -> "Template":
         """
-        Fill in string or numeric values. `repr` is called before filling.
+        Fill in JSON-serializable values.
         """
         self._fill_inline_slots(stringifier=_check_repr, optional=optional, **kwargs)
         return self
@@ -253,12 +274,17 @@ class Template:
     @_check_kwargs
     def fill_blocks(self, optional=False, **kwargs) -> "Template":
         """
-        Fill in code or comment blocks. Leading whitespace will be duplicated.
+        Fill in code or comment blocks. Leading whitespace and "#" will be
+        repeated for each line in the fill value.
         """
         self._fill_block_slots(stringifier=str, optional=optional, **kwargs)
         return self
 
     def finish(self, reformat: bool = False) -> str:
+        """
+        Confirms that all slots are filled and returns the resulting string.
+        If `reformat` is supplied, code is formatted with black.
+        """
         # The reformat default is False here,
         # because it is true downstream for notebook generation,
         # and we don't need to be redundant.

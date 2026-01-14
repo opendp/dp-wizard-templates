@@ -1,4 +1,6 @@
-"""Code templating tools"""
+"""
+.. include:: ../example.md
+"""
 
 from pathlib import Path
 

@@ -104,7 +104,7 @@ def _clean_nb(nb_json: str) -> str:
     return json.dumps(nb, indent=1)
 
 
-def convert_nb_to_html(python_nb: str, numbered=True) -> str:
+def _convert_nb_json_to_object(python_nb: str):
     import warnings
 
     import nbformat.warnings
@@ -113,7 +113,18 @@ def convert_nb_to_html(python_nb: str, numbered=True) -> str:
         warnings.simplefilter(
             action="ignore", category=nbformat.warnings.DuplicateCellId
         )
-        notebook = nbformat.reads(python_nb, as_version=4)
+        return nbformat.reads(python_nb, as_version=4)
+
+
+def convert_nb_to_md(python_nb: str) -> str:
+    notebook = _convert_nb_json_to_object(python_nb)
+    exporter = nbconvert.MarkdownExporter()
+    (body, _resources) = exporter.from_notebook_node(notebook)
+    return body
+
+
+def convert_nb_to_html(python_nb: str) -> str:
+    notebook = _convert_nb_json_to_object(python_nb)
     exporter = nbconvert.HTMLExporter(
         template_name="lab",
         # The "classic" template's CSS forces large code cells on to
@@ -128,13 +139,4 @@ def convert_nb_to_html(python_nb: str, numbered=True) -> str:
         # ],
     )
     (body, _resources) = exporter.from_notebook_node(notebook)
-    if not numbered:
-        body = body.replace(
-            "</head>",
-            """
-<style>
-.jp-InputPrompt {display: none;}
-</style>
-</head>""",
-        )
     return body
