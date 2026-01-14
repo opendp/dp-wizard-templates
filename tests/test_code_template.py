@@ -369,3 +369,26 @@ def test_user_slot_injection():
         FILL_A="hello world",
         FILL_B="FILL_A",
     ).finish()
+
+
+def test_deepcopy():
+    def template(ARG):
+        print(ARG)  # COMMENT
+
+    orig = Template(template).fill_values(ARG="hello")
+    from copy import deepcopy
+
+    copy = deepcopy(orig)
+
+    assert orig.fill_expressions(COMMENT="world").finish() == "print('hello')  # world"
+    assert copy.fill_expressions(COMMENT="kitty").finish() == "print('hello')  # kitty"
+
+
+def test_optional():
+    def template():
+        print(2 + 2)
+
+    assert (
+        Template(template).fill_expressions(VERSION="1.2.3.4", optional=True).finish()
+        == "print(2 + 2)"
+    )

@@ -59,11 +59,12 @@ def _check_repr(value):
 def _check_kwargs(func):
     def wrapper(*args, **kwargs):
         WHEN = "when"
+        OPTIONAL = "optional"
         errors = []
         for k in kwargs.keys():
             if k in args[0]._ignore:
                 errors.append(f'kwarg "{k}" is an ignored slot name')
-            if not (re.fullmatch(_slot_re, k) or k == WHEN):
+            if not (re.fullmatch(_slot_re, k) or k == WHEN or k == OPTIONAL):
                 errors.append(f'kwarg "{k}" is not a valid slot name')
         if errors:
             raise TemplateException(
@@ -204,11 +205,14 @@ class Template:
     def _fill_inline_slots(
         self,
         stringifier: Callable[[str], str],
+        optional: bool,
         **kwargs,
     ) -> None:
         def function(k, v, errors):
             try:
-                self._slots.fill_inline(k, stringifier(v))
+                self._slots.fill_inline(
+                    k, stringifier(v), error_if_no_match=not optional
+                )
             except TemplateException as e:
                 errors.append(", ".join(e.args))
 
@@ -217,38 +221,41 @@ class Template:
     def _fill_block_slots(
         self,
         stringifier: Callable[[str], str],
+        optional: bool,
         **kwargs,
     ) -> None:
         def function(k, v, errors):
             try:
-                self._slots.fill_block(k, stringifier(v))
+                self._slots.fill_block(
+                    k, stringifier(v), error_if_no_match=not optional
+                )
             except TemplateException as e:
                 errors.append(", ".join(e.args))
 
         self._loop_kwargs(function, **kwargs)
 
     @_check_kwargs
-    def fill_expressions(self, **kwargs) -> "Template":
+    def fill_expressions(self, optional=False, **kwargs) -> "Template":
         """
         Fill in variable names, or dicts or lists represented as strings.
         """
-        self._fill_inline_slots(stringifier=str, **kwargs)
+        self._fill_inline_slots(stringifier=str, optional=optional, **kwargs)
         return self
 
     @_check_kwargs
-    def fill_values(self, **kwargs) -> "Template":
+    def fill_values(self, optional=False, **kwargs) -> "Template":
         """
         Fill in string or numeric values. `repr` is called before filling.
         """
-        self._fill_inline_slots(stringifier=_check_repr, **kwargs)
+        self._fill_inline_slots(stringifier=_check_repr, optional=optional, **kwargs)
         return self
 
     @_check_kwargs
-    def fill_blocks(self, **kwargs) -> "Template":
+    def fill_blocks(self, optional=False, **kwargs) -> "Template":
         """
         Fill in code or comment blocks. Leading whitespace will be duplicated.
         """
-        self._fill_block_slots(stringifier=str, **kwargs)
+        self._fill_block_slots(stringifier=str, optional=optional, **kwargs)
         return self
 
     def finish(self, reformat: bool = False) -> str:
