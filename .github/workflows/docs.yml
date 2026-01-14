@@ -28,7 +28,7 @@ jobs:
       - run: pip install -r requirements.txt
       - run: pip install -r requirements-dev.txt
       # CHANGED from original
-      - run: pdoc -o docs/ dp_wizard_templates
+      - run: PDOC_ALLOW_EXEC=1 pdoc -o docs/ dp_wizard_templates
 
       - uses: actions/upload-pages-artifact@v1
         with:

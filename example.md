@@ -164,7 +164,8 @@ to notebooks, and to convert notebooks to HTML. It is a thin wrapper
 which provides default settings for `nbconvert` and `jupytext`.
 
 The Python code is converted to a notebook using the
-[jupytext light format](https://jupytext.readthedocs.io/en/latest/formats-scripts.html#the-light-format): # noqa: B950
+[jupytext light
+format](https://jupytext.readthedocs.io/en/latest/formats-scripts.html#the-light-format):
 Contiguous comments are coverted to markdown cells,
 and contiguous lines of code are converted to code cells.
 
