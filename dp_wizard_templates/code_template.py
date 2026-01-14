@@ -1,6 +1,7 @@
 import inspect
 import json
 import re
+from collections import namedtuple
 from pathlib import Path
 from typing import Callable, Iterable, Optional
 
@@ -51,7 +52,7 @@ def _check_repr(value):
     try:
         json.dumps(value)
     except TypeError as e:
-        raise TemplateException(e)
+        raise TemplateException(e.args[0])
     return repr(value)
 
 
@@ -79,8 +80,6 @@ def _check_kwargs(func):
 
     return wrapper
 
-
-from collections import namedtuple
 
 Token = namedtuple("Token", ["string", "is_slot", "is_prefix"])
 
@@ -122,7 +121,7 @@ class _Slots:
                 else:
                     prev = self._tokens[i - 1]
                     if not prev.is_prefix:
-                        raise TemplateException("Expected prefix")
+                        raise TemplateException("expected prefix")
                     prefix = prev.string
                     self._tokens[i] = Token(
                         f"\n{prefix}".join(new_value.splitlines()),
@@ -130,7 +129,7 @@ class _Slots:
                         is_slot=False,
                     )
         if error_if_no_match and not found_match:
-            raise TemplateException(f"No '{new_value}' slot")
+            raise TemplateException(f"no '{slot_name}' slot to fill with '{new_value}'")
 
     def fill_inline(self, slot_name: str, new_value: str, error_if_no_match=True):
         self._fill(
@@ -142,10 +141,17 @@ class _Slots:
             slot_name, new_value, error_if_no_match=error_if_no_match, fill_inline=False
         )
 
-    def finish(self):
-        unfilled = ", ".join(token.string for token in self._tokens if token.is_slot)
+    def finish(self, ignore: Iterable[str] = tuple()):
+        unfilled = ", ".join(
+            token.string
+            for token in self._tokens
+            if token.is_slot and token.string not in ignore
+        )
         if unfilled:
-            raise TemplateException(f"Unfilled slots: {unfilled}")
+            raise TemplateException(f"unfilled slots: {unfilled}")
+        return self.preview()
+
+    def preview(self):
         return "".join(token.string for token in self._tokens)
 
 
@@ -178,7 +184,11 @@ class Template:
         self._ignore = ignore
 
     def _make_message(self, errors: list[str]) -> str:
-        return f"In {self._source}, " + ", ".join(sorted(errors)) + f":\n{self._slots}"
+        return (
+            f"In {self._source}, "
+            + ", ".join(sorted(errors))
+            + f":\n{self._slots.preview()}"
+        )
 
     def _loop_kwargs(
         self,
@@ -200,83 +210,22 @@ class Template:
             try:
                 self._slots.fill_inline(k, stringifier(v))
             except TemplateException as e:
-                errors.append(e.args)
+                errors.append(", ".join(e.args))
 
         self._loop_kwargs(function, **kwargs)
 
-    # def _fill_attribute_slots(self, **kwargs) -> None:
-    #     def function(k, v, errors):
-    #         k_re = re.escape(k)
-    #         attr_re = rf"\.\b{k_re}\b"
-    #         self._template, count = re.subn(
-    #             attr_re, f".{v}" if v else "", self._template
-    #         )
-    #         if count == 0:
-    #             errors.append(
-    #                 f"no '.{k}' slot to fill with '{v}'"
-    #                 if v
-    #                 else f"no '.{k}' slot to delete (because replacement is false-y)"
-    #             )
+    def _fill_block_slots(
+        self,
+        stringifier: Callable[[str], str],
+        **kwargs,
+    ) -> None:
+        def function(k, v, errors):
+            try:
+                self._slots.fill_block(k, stringifier(v))
+            except TemplateException as e:
+                errors.append(", ".join(e.args))
 
-    #     self._loop_kwargs(function, **kwargs)
-
-    # def _fill_argument_slots(
-    #     self,
-    #     stringifier: Callable[[str], str],
-    #     **kwargs,
-    # ) -> None:
-    #     def function(k, v, errors):
-    #         k_re = re.escape(k)
-    #         arg_re = rf"\s*\b{k_re}\b,\s*"
-    #         self._template, count = re.subn(
-    #             arg_re, f"{stringifier(v)}," if v else "", self._template
-    #         )
-    #         if count == 0:
-    #             errors.append(
-    #                 f"no '{k},' slot to fill with '{v}'"
-    #                 if v
-    #                 else f"no '{k},' slot to delete (because replacement is false-y)"
-    #             )
-
-    #     self._loop_kwargs(function, **kwargs)
-
-    # def _fill_block_slots(
-    #     self,
-    #     prefix_re: str,
-    #     splitter: Callable[[str], list[str]],
-    #     **kwargs,
-    # ) -> None:
-    #     def function(k, v, errors):
-    #         if not isinstance(v, str):
-    #             errors.append(f"for '{k}' slot, expected string, not '{v}'")
-    #             return
-
-    #         def match_indent(match):
-    #             # This does what we want, but binding is confusing.
-    #             return "\n".join(
-    #                 match.group(1) + line for line in splitter(v)  # noqa: B023
-    #             )
-
-    #         k_re = re.escape(k)
-    #         self._template, count = re.subn(
-    #             rf"^([ \t]*{prefix_re}){k_re}$",
-    #             match_indent,
-    #             self._template,
-    #             flags=re.MULTILINE,
-    #         )
-    #         if count == 0:
-    #             base_message = f"no '{k}' slot to fill with '{v}'"
-    #             if k in self._template:
-    #                 note = (
-    #                     "comment slots must be prefixed with '#'"
-    #                     if prefix_re
-    #                     else "block slots must be alone on line"
-    #                 )
-    #                 errors.append(f"{base_message} ({note})")
-    #             else:
-    #                 errors.append(base_message)
-
-    #     self._loop_kwargs(function, **kwargs)
+        self._loop_kwargs(function, **kwargs)
 
     @_check_kwargs
     def fill_expressions(self, **kwargs) -> "Template":
@@ -286,30 +235,6 @@ class Template:
         self._fill_inline_slots(stringifier=str, **kwargs)
         return self
 
-    # @_check_kwargs
-    # def fill_attributes(self, **kwargs) -> "Template":
-    #     """
-    #     Fill in attributes with expressions, or remove leading "." if false-y.
-    #     """
-    #     self._fill_attribute_slots(**kwargs)
-    #     return self
-
-    # @_check_kwargs
-    # def fill_argument_expressions(self, **kwargs) -> "Template":
-    #     """
-    #     Fill in argument expressions, or removing trailing "," if false-y.
-    #     """
-    #     self._fill_argument_slots(stringifier=str, **kwargs)
-    #     return self
-
-    # @_check_kwargs
-    # def fill_argument_values(self, **kwargs) -> "Template":
-    #     """
-    #     Fill in argument values, or removing trailing "," if false-y.
-    #     """
-    #     self._fill_argument_slots(stringifier=_check_repr, **kwargs)
-    #     return self
-
     @_check_kwargs
     def fill_values(self, **kwargs) -> "Template":
         """
@@ -318,41 +243,21 @@ class Template:
         self._fill_inline_slots(stringifier=_check_repr, **kwargs)
         return self
 
-    # @_check_kwargs
-    # def fill_code_blocks(self, **kwargs) -> "Template":
-    #     """
-    #     Fill in code blocks. Slot must be alone on line.
-    #     """
-
-    #     def splitter(s):
-    #         return s.split("\n")
-
-    #     self._fill_block_slots(prefix_re=r"", splitter=splitter, **kwargs)
-    #     return self
-
-    # @_check_kwargs
-    # def fill_comment_blocks(self, **kwargs) -> "Template":
-    #     """
-    #     Fill in comment blocks. Slot must be commented.
-    #     """
-
-    #     def splitter(s):
-    #         stripped = [line.strip() for line in s.split("\n")]
-    #         return [line for line in stripped if line]
-
-    #     self._fill_block_slots(prefix_re=r"#\s+", splitter=splitter, **kwargs)
-    #     return self
+    @_check_kwargs
+    def fill_blocks(self, **kwargs) -> "Template":
+        """
+        Fill in code or comment blocks. Leading whitespace will be duplicated.
+        """
+        self._fill_block_slots(stringifier=str, **kwargs)
+        return self
 
     def finish(self, reformat: bool = False) -> str:
         # The reformat default is False here,
         # because it is true downstream for notebook generation,
         # and we don't need to be redundant.
-        # unfilled_slots = (self._initial_slots & self._find_slots()) - set(self._ignore)
-        # if unfilled_slots:
-        #     errors = [f"'{slot}' slot not filled" for slot in unfilled_slots]
-        #     raise TemplateException(self._make_message(errors))
 
-        if reformat:
-            self._template = black.format_str(self._template, mode=black.Mode())
+        finished = self._slots.finish(self._ignore)
+        if not reformat:
+            return finished
 
-        return self._template
+        return black.format_str(finished, mode=black.Mode())

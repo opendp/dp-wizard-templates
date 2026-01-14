@@ -82,7 +82,7 @@ root = Path(__file__).parent.parent
 block_demo = (
     Template("block_demo", root=root / "examples")
     .fill_expressions(FUNCTION_NAME="freeze_warning", PARAMS="temp_c")
-    .fill_code_blocks(INNER_BLOCK=conditional_print)
+    .fill_blocks(INNER_BLOCK=conditional_print)
     .finish()
 )
 
@@ -138,11 +138,7 @@ assert greeting == "print('Good evening!')"
 # +
 
 assert [method for method in dir(Template) if not method.startswith("_")] == [
-    "fill_argument_expressions",  # Fills expressions, or removes trailing comma if false-y
-    "fill_argument_values",  # Fills values, or removes trailing comma if false-y
-    "fill_attributes",  # Removes the preceding period if fill value is false-y
-    "fill_code_blocks",  # Fills multi-line blocks
-    "fill_comment_blocks",  # Fills multi-line comment blocks
+    "fill_blocks",  # Fills multi-line blocks
     "fill_expressions",  # Fills expressions verbatim
     "fill_values",  # Preserves numbers, dicts, and lists when filling
     "finish",  # Check that slots are filled, and return a string
@@ -193,7 +189,7 @@ def notebook_template(TITLE, BLOCK, FUNCTION_NAME):
 title = "Hello World!"
 notebook_py = (
     Template(notebook_template)
-    .fill_code_blocks(BLOCK=block_demo)
+    .fill_blocks(BLOCK=block_demo)
     .fill_expressions(FUNCTION_NAME="freeze_warning", TITLE=title)
     .finish()
 )
