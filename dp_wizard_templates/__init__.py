@@ -1,5 +1,5 @@
 """
-.. include:: ../example.md
+.. include:: ../examples/tutorial.md
 """
 
 from pathlib import Path

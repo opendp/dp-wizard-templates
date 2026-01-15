@@ -32,9 +32,9 @@ def convert_py_to_nb(
     python_str: str, title: str, execute: bool = False, reformat: bool = True
 ) -> str:
     """
-    Given Python code as a string, returns a notebook as a string.
-    Calls jupytext as a subprocess:
-    Not ideal, but only the CLI is documented well.
+    Given Python code as a string, returns a notebook as a string of JSON.
+    (Calls jupytext as a subprocess:
+    Not ideal, but only the CLI is well documented.)
     """
     with TemporaryDirectory() as temp_dir:
         if not _is_kernel_installed():
@@ -117,6 +117,10 @@ def _convert_nb_json_to_object(python_nb: str):
 
 
 def convert_nb_to_md(python_nb: str) -> str:
+    """
+    Given a notebook as a string of JSON,
+    returns markdown.
+    """
     notebook = _convert_nb_json_to_object(python_nb)
     exporter = nbconvert.MarkdownExporter()
     (body, _resources) = exporter.from_notebook_node(notebook)
@@ -124,6 +128,10 @@ def convert_nb_to_md(python_nb: str) -> str:
 
 
 def convert_nb_to_html(python_nb: str) -> str:
+    """
+    Given a notebook as a string of JSON,
+    returns HTML.
+    """
     notebook = _convert_nb_json_to_object(python_nb)
     exporter = nbconvert.HTMLExporter(
         template_name="lab",
