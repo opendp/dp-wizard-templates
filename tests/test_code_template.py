@@ -290,7 +290,7 @@ def test_fill_comment_block():
 def test_finish_reformat():
     template = Template("print( 'messy','code!' )#comment")
     filled = template.finish(reformat=True)
-    assert filled == 'print("messy", "code!")  # comment\n'
+    assert filled == 'print("messy", "code!")  # comment'
 
 
 def test_fill_blocks_missing_slot_in_template_alone():

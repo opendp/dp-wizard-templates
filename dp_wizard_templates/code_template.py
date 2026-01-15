@@ -293,4 +293,7 @@ class Template:
         if not reformat:
             return finished
 
-        return black.format_str(finished, mode=black.Mode())
+        # Final strip() helps with tutorial.md doctests:
+        # With a "\n" at the end, doctests need to include
+        # <BLANKLINE>
+        return black.format_str(finished, mode=black.Mode()).strip()

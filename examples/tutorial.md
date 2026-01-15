@@ -47,12 +47,9 @@ There are two modules in this library. We'll look at `code_template` first.
 ...     .finish(reformat=True)
 ... )
 
->>> assert (
-...     conditional_print
-...     == """if temp_c < 0:
-...     print("It is freezing!")
-... """
-... )
+>>> print(conditional_print)
+if temp_c < 0:
+    print("It is freezing!")
 
 ```
 
@@ -69,26 +66,22 @@ can be parsed, they should not be imported or executed as-is.)
 
 
 ```python
->>> from pathlib import Path  # noqa: E402
+>>> from pathlib import Path
 
 >>> block_demo = (
 ...     Template("block_demo", root=Path("examples"))
 ...     .fill_expressions(FUNCTION_NAME="freeze_warning", PARAMS="temp_c")
 ...     .fill_blocks(INNER_BLOCK=conditional_print)
-...     .finish()
+...     .finish(reformat=True)
 ... )
 
->>> assert (
-...     block_demo.strip()
-...     == '''
-... def freeze_warning(temp_c):
-...     """
-...     This demonstrates how larger blocks of code can be built compositionally.
-...     """
-...     if temp_c < 0:
-...         print("It is freezing!")
-...     '''.strip()
-... )
+>>> print(block_demo)
+def freeze_warning(temp_c):
+    """
+    This demonstrates how larger blocks of code can be built compositionally.
+    """
+    if temp_c < 0:
+        print("It is freezing!")
 
 ```
 
@@ -103,7 +96,8 @@ Finally, plain strings can also be used for templates.
 ...     .finish()
 ... )
 
->>> assert assignment == "band = 'Duran' * 2"
+>>> print(assignment)
+band = 'Duran' * 2
 
 ```
 
@@ -121,7 +115,8 @@ or conditional blocks around the template code.
 ...     .finish()
 ... )
 
->>> assert greeting == "print('Good evening!')"
+>>> print(greeting)
+print('Good evening!')
 
 ```
 
