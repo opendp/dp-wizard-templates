@@ -138,7 +138,7 @@ to produce other artifacts without adding clutter.
 
 
 ```python
->>> from dp_wizard_templates.converters import (  # noqa: E402
+>>> from dp_wizard_templates.converters import (
 ...     convert_nb_to_html,
 ...     convert_nb_to_md,
 ...     convert_py_to_nb,
@@ -180,7 +180,7 @@ to produce other artifacts without adding clutter.
 
 ```
 
-The [output](examples/hello-world.html) is short,
+The output ([HTML](examples/hello-world.html) / [Notebook](examples/hello-world.ipynb)) is short,
 but it is an end-to-end demonstration of DP Wizard Templates.
 
 ## Last thoughts

@@ -26,7 +26,9 @@ def norm_nb(nb_str):
     nb = json.loads(nb_str)
     nb["metadata"] = {k: v for k, v in nb["metadata"].items() if k == "title"}
     for cell in nb["cells"]:
-        cell["metadata"] = {}
+        metadata = cell["metadata"]
+        if "execution" in metadata:
+            metadata.pop("execution")
 
     return json.dumps(nb, indent=1)
 
