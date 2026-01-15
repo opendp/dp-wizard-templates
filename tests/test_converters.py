@@ -78,8 +78,6 @@ def test_convert_nb_to_html():
 def test_convert_nb_to_md():
     notebook = (fixtures_path / "fake-executed.ipynb").read_text()
     md = convert_nb_to_md(notebook)
-    assert "[1]:" not in md
-    assert "<pre>4" not in md
     assert (
         md
         == """```python
