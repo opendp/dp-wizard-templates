@@ -8,6 +8,7 @@ from dp_wizard_templates.converters import (
     ConversionException,
     _clean_nb,
     convert_nb_to_html,
+    convert_nb_to_md,
     convert_py_to_nb,
 )
 
@@ -72,3 +73,27 @@ def test_convert_nb_to_html():
     html = convert_nb_to_html(notebook)
     assert "[1]:" in html
     assert "<pre>4" in html
+
+
+def test_convert_nb_to_md():
+    notebook = (fixtures_path / "fake-executed.ipynb").read_text()
+    md = convert_nb_to_md(notebook)
+    assert "[1]:" not in md
+    assert "<pre>4" not in md
+    assert (
+        md
+        == """```python
+%pip install pytest
+```
+
+Introduction
+
+
+```python
+print(2 + 2)
+```
+
+    4
+
+"""
+    )
