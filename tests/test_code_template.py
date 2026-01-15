@@ -3,7 +3,84 @@ from pathlib import Path
 
 import pytest
 
-from dp_wizard_templates.code_template import Template, TemplateException
+from dp_wizard_templates.code_template import (
+    Template,
+    TemplateException,
+    _line_re,
+    _slot_re,
+    _Slots,
+    _Token,
+)
+
+
+def test_line_re():
+    assert _line_re.split("normal\n  indent\n  # comment") == [
+        "",  # Always zero-length
+        "",  # prefix
+        "normal\n",
+        "  ",  # prefix
+        "indent\n",
+        "  # ",  # prefix
+        "comment",
+    ]
+
+
+def test_slot_re():
+    assert _slot_re.split("A AB ABC ABC_XYZ TODO N0_NUMBERS") == [
+        "A AB ",
+        "ABC",  # slot
+        " ",
+        "ABC_XYZ",  # slot
+        " ",
+        "TODO",  # slot
+        " N0_NUMBERS",
+    ]
+
+
+def test_slots_fill_inline():
+    slots = _Slots("START and END")
+    assert slots._tokens == [
+        _Token(string="", is_slot=False, is_prefix=True),
+        _Token(string="START", is_slot=True, is_prefix=False),
+        _Token(string=" and ", is_slot=False, is_prefix=False),
+        _Token(string="END", is_slot=True, is_prefix=False),
+    ]
+    slots.fill_inline("START", "END")
+    slots.fill_inline("END", "START")
+    assert slots.finish() == "END and START"
+
+
+def test_slots_fill_block():
+    slots = _Slots(
+        """intro
+CODE
+    INDENTED
+    # COMMENT"""
+    )
+    assert slots._tokens == [
+        _Token(string="", is_slot=False, is_prefix=True),
+        _Token(string="intro\n", is_slot=False, is_prefix=False),
+        _Token(string="", is_slot=False, is_prefix=True),
+        _Token(string="CODE", is_slot=True, is_prefix=False),
+        _Token(string="\n", is_slot=False, is_prefix=False),
+        _Token(string="    ", is_slot=False, is_prefix=True),
+        _Token(string="INDENTED", is_slot=True, is_prefix=False),
+        _Token(string="\n", is_slot=False, is_prefix=False),
+        _Token(string="    # ", is_slot=False, is_prefix=True),
+        _Token(string="COMMENT", is_slot=True, is_prefix=False),
+    ]
+    slots.fill_block("CODE", "if 'hello world':")
+    slots.fill_block("INDENTED", "if foo:\n    bar()")
+    slots.fill_block("COMMENT", "multi\nline")
+    assert (
+        slots.finish()
+        == """intro
+if 'hello world':
+    if foo:
+        bar()
+    # multi
+    # line"""
+    )
 
 
 def test_non_repr_value():
@@ -40,7 +117,7 @@ def test_ignore_kwarg():
 
     with pytest.raises(
         TemplateException,
-        match=r"'IGNORE_ME' slot not filled",
+        match=r"unfilled slots: IGNORE_ME",
     ):
         Template(template).finish()
 
@@ -118,9 +195,7 @@ def test_fill_expressions_missing_slots_in_template():
 
 def test_fill_expressions_extra_slots_in_template():
     template = Template("No one VERB ARTICLE ADJ NOUN!")
-    with pytest.raises(
-        TemplateException, match=r"'ARTICLE' slot not filled, 'VERB' slot not filled"
-    ):
+    with pytest.raises(TemplateException, match=r"unfilled slots: VERB, ARTICLE"):
         template.fill_expressions(
             ADJ="Spanish",
             NOUN="Inquisition",
@@ -149,7 +224,7 @@ def test_fill_values_missing_slot_in_template():
 
 def test_fill_values_extra_slot_in_template():
     template = Template("CMD [STRING] * NUM == LIST")
-    with pytest.raises(TemplateException, match=r"'CMD' slot not filled"):
+    with pytest.raises(TemplateException, match=r"unfilled slots: CMD"):
         template.fill_values(
             STRING="🙂",
             NUM=3,
@@ -174,11 +249,11 @@ with fake:
 """,
     )
     filled = (
-        template.fill_code_blocks(
+        template.fill_blocks(
             FIRST="\n".join(f"import {i}" for i in "abc"),
             THIRD="\n".join(f"{i}()" for i in "xyz"),
         )
-        .fill_comment_blocks(
+        .fill_blocks(
             SECOND="This is a\nmulti-line comment",
         )
         .fill_values(VALUE=42)
@@ -208,7 +283,7 @@ with fake:
 
 def test_fill_comment_block():
     template = Template("# SLOT")
-    filled = template.fill_comment_blocks(SLOT="placeholder").finish()
+    filled = template.fill_blocks(SLOT="placeholder").finish()
     assert filled == "# placeholder"
 
 
@@ -218,47 +293,25 @@ def test_finish_reformat():
     assert filled == 'print("messy", "code!")  # comment\n'
 
 
-def test_fill_comment_block_without_comment():
-    template = Template("SLOT")
-    with pytest.raises(
-        TemplateException,
-        match=r"In string template, no 'SLOT' slot to fill with 'placeholder' "
-        r"\(comment slots must be prefixed with '#'\)",
-    ):
-        template.fill_comment_blocks(SLOT="placeholder").finish()
-
-
 def test_fill_blocks_missing_slot_in_template_alone():
     template = Template("No block slot")
-    with pytest.raises(
-        TemplateException, match=r"no 'SLOT' slot to fill with 'placeholder':"
-    ):
-        template.fill_code_blocks(SLOT="placeholder").finish()
+    with pytest.raises(TemplateException, match=r"no 'SLOT' slot"):
+        template.fill_blocks(SLOT="placeholder").finish()
 
 
 def test_fill_blocks_missing_slot_in_template_not_alone():
     template = Template("No block SLOT")
     with pytest.raises(
         TemplateException,
-        match=r"no 'SLOT' slot to fill with 'placeholder' "
-        r"\(block slots must be alone on line\)",
+        match=r"In string template, expected prefix",
     ):
-        template.fill_code_blocks(SLOT="placeholder").finish()
+        template.fill_blocks(SLOT="placeholder").finish()
 
 
 def test_fill_blocks_extra_slot_in_template():
     template = Template("EXTRA\nSLOT")
-    with pytest.raises(TemplateException, match=r"'EXTRA' slot not filled"):
-        template.fill_code_blocks(SLOT="placeholder").finish()
-
-
-def test_fill_blocks_not_string():
-    template = Template("SOMETHING")
-    with pytest.raises(
-        TemplateException,
-        match=r"for 'SOMETHING' slot, expected string, not '123'",
-    ):
-        template.fill_code_blocks(SOMETHING=123).finish()
+    with pytest.raises(TemplateException, match=r"unfilled slots: EXTRA"):
+        template.fill_blocks(SLOT="placeholder").finish()
 
 
 def test_no_root_kwarg_with_function_template():
@@ -270,78 +323,6 @@ def test_no_root_kwarg_with_function_template():
         match=r"If template is function, root kwarg not allowed",
     ):
         Template(template, root=Path("not-allowed"))
-
-
-def test_fill_attributes():
-    def template(old):
-        new = old.DO_THIS.NOT_THAT  # noqa: F841
-
-    assert (
-        Template(template).fill_attributes(DO_THIS="do_this()", NOT_THAT=[]).finish()
-        == "new = old.do_this()\n"
-    )
-
-
-def test_fill_attributes_error():
-    def template(old):
-        new = old.DO_THIS  # noqa: F841
-
-    with pytest.raises(
-        TemplateException,
-        match=re.escape(
-            "In function template, no '.DO_THAT' slot to delete "
-            "(because replacement is false-y):\nnew = old.DO_THIS\n"
-        ),
-    ):
-        Template(template).fill_attributes(DO_THAT=None).finish()
-
-
-def test_fill_argument_values():
-    def template(old, FILL_THIS, NOT_THAT):
-        new = old(  # noqa: F841
-            FILL_THIS,
-            NOT_THAT,
-        )
-        print(new)
-
-    assert (
-        Template(template)
-        .fill_argument_values(FILL_THIS=[1, 2, 3], NOT_THAT=[])
-        .finish()
-        == "new = old([1, 2, 3],)\nprint(new)"
-    )
-
-
-def test_fill_argument_expressions():
-    def template(old, FILL_THIS, NOT_THAT):
-        new = old(
-            FILL_THIS,
-            NOT_THAT,
-        )
-        print(new)
-
-    assert (
-        Template(template)
-        .fill_argument_expressions(FILL_THIS="[1, 2, 3]", NOT_THAT=None)
-        .finish()
-        == "new = old([1, 2, 3],)\nprint(new)"
-    )
-
-
-def test_fill_argument_values_error():
-    def template(old, FILL_THIS):
-        old(
-            FILL_THIS,
-        )
-
-    with pytest.raises(
-        TemplateException,
-        match=re.escape(
-            "In function template, no 'XYZ,' slot to delete "
-            "(because replacement is false-y)"
-        ),
-    ):
-        Template(template).fill_argument_values(XYZ=None).finish()
 
 
 def test_lc_kwarg_error():
@@ -376,4 +357,69 @@ def test_when_false():
         .fill_values(FILL="redundant!", when=0)
         .finish()
         == "print('goodbye!')"
+    )
+
+
+def test_user_slot_injection():
+    def template(FILL_A, FILL_B):
+        print(FILL_A)
+        print(FILL_B)
+
+    Template(template).fill_values(
+        FILL_A="hello world",
+        FILL_B="FILL_A",
+    ).finish()
+
+
+def test_deepcopy():
+    def template(ARG):
+        print(ARG)  # COMMENT
+
+    orig = Template(template).fill_values(ARG="hello")
+    from copy import deepcopy
+
+    copy = deepcopy(orig)
+
+    assert orig.fill_expressions(COMMENT="world").finish() == "print('hello')  # world"
+    assert copy.fill_expressions(COMMENT="kitty").finish() == "print('hello')  # kitty"
+
+
+def test_optional():
+    def template():
+        print(2 + 2)
+
+    assert (
+        Template(template).fill_expressions(VERSION="1.2.3.4", optional=True).finish()
+        == "print(2 + 2)"
+    )
+
+
+def test_default_idiom():
+    def fill_defaults(template: Template):
+        return template.fill_expressions(VERSION="0.1.2.3", optional=True)
+
+    def template_without(ARG):
+        print(ARG)
+
+    def template_with(ARG):
+        # Version: VERSION
+        print(ARG)
+
+    assert (
+        fill_defaults(Template(template_without).fill_values(ARG="hello")).finish()
+        == "print('hello')"
+    )
+
+    assert (
+        fill_defaults(Template(template_with).fill_values(ARG="hello")).finish()
+        == "# Version: 0.1.2.3\nprint('hello')"
+    )
+
+    assert (
+        fill_defaults(
+            Template(template_with)
+            .fill_values(ARG="hello")
+            .fill_expressions(VERSION="1.0")
+        ).finish()
+        == "# Version: 1.0\nprint('hello')"
     )
