@@ -80,7 +80,9 @@ isort==7.0.0
 jedi==0.19.2
     # via ipython
 jinja2==3.1.6
-    # via nbconvert
+    # via
+    #   nbconvert
+    #   pdoc
 jsonschema==4.25.0
     # via nbformat
 jsonschema-specifications==2025.4.1
@@ -105,10 +107,13 @@ markdown-it-py==3.0.0
     # via
     #   jupytext
     #   mdit-py-plugins
+markdown2==2.5.4
+    # via pdoc
 markupsafe==3.0.2
     # via
     #   jinja2
     #   nbconvert
+    #   pdoc
 matplotlib-inline==0.1.7
     # via
     #   ipykernel
@@ -152,6 +157,8 @@ parso==0.8.4
     # via jedi
 pathspec==0.12.1
     # via black
+pdoc==16.0.0
+    # via -r requirements-dev.in
 pexpect==4.9.0
     # via ipython
 pip-tools==7.5.0
@@ -183,6 +190,7 @@ pygments==2.19.2
     # via
     #   ipython
     #   nbconvert
+    #   pdoc
     #   pytest
 pyproject-hooks==1.2.0
     # via
