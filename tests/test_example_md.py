@@ -235,12 +235,11 @@ notebook_html = convert_nb_to_html(notebook_ipynb)
 readme_test_py = Path(__file__).read_text()
 
 md_path = root / "example.md"
-before_hash = hash(md_path.read_text())
+old_md = md_path.read_text()
 
-md = convert_nb_to_md(convert_py_to_nb(readme_test_py, "DP Wizard Templates"))
-(md_path).write_text(md)
+new_md = convert_nb_to_md(convert_py_to_nb(readme_test_py, "DP Wizard Templates"))
+(md_path).write_text(new_md)
 
-after_hash = hash(md_path.read_text())
 assert (
-    before_hash == after_hash
+    old_md == new_md
 ), "example.md has changed: If that is intended, the next test run should pass."
