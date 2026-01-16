@@ -22,15 +22,7 @@ def norm_nb(nb_str):
         "2024-01-01T00:00:00.000000Z",
         nb_str,
     )
-
-    nb = json.loads(nb_str)
-    nb["metadata"] = {k: v for k, v in nb["metadata"].items() if k == "title"}
-    for cell in nb["cells"]:
-        metadata = cell["metadata"]
-        if "execution" in metadata:
-            metadata.pop("execution")
-
-    return json.dumps(nb, indent=1)
+    return nb_str
 
 
 def test_convert_py_to_nb():
