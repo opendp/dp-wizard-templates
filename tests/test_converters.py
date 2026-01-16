@@ -2,14 +2,14 @@ import json
 import re
 from pathlib import Path
 
+import nbconvert
 import pytest
 
 from dp_wizard_templates.converters import (
     ConversionException,
     _clean_nb,
-    convert_nb_to_html,
-    convert_nb_to_md,
-    convert_py_to_nb,
+    convert_from_notebook,
+    convert_to_notebook,
 )
 
 fixtures_path = Path(__file__).parent / "fixtures"
@@ -25,9 +25,9 @@ def norm_nb(nb_str):
     return nb_str
 
 
-def test_convert_py_to_nb():
+def test_convert_to_notebook():
     python_str = (fixtures_path / "fake.py").read_text()
-    actual_nb_str = convert_py_to_nb(python_str, "Title!")
+    actual_nb_str = convert_to_notebook(python_str, "Title!")
     (fixtures_path / "actual-fake.ipynb").write_text(actual_nb_str)
     expected_nb_str = (fixtures_path / "expected-fake.ipynb").read_text()
 
@@ -36,9 +36,9 @@ def test_convert_py_to_nb():
     assert normed_actual_nb_str == normed_expected_nb_str
 
 
-def test_convert_py_to_nb_execute():
+def test_convert_to_notebook_execute():
     python_str = (fixtures_path / "fake.py").read_text()
-    actual_nb_str = convert_py_to_nb(python_str, "Title!", execute=True)
+    actual_nb_str = convert_to_notebook(python_str, "Title!", execute=True)
     (fixtures_path / "actual-fake-executed.ipynb").write_text(actual_nb_str)
     expected_nb_str = (fixtures_path / "expected-fake-executed.ipynb").read_text()
 
@@ -49,7 +49,7 @@ def test_convert_py_to_nb_execute():
 
 def test_convert_nb_to_html():
     notebook = (fixtures_path / "expected-fake-executed.ipynb").read_text()
-    actual_html = convert_nb_to_html(notebook)
+    actual_html = convert_from_notebook(notebook)
     (fixtures_path / "actual-fake-executed.html").write_text(actual_html)
     assert "[1]:" in actual_html
     assert "<pre>4" in actual_html
@@ -60,7 +60,8 @@ def test_convert_nb_to_html():
 
 def test_convert_nb_to_md():
     notebook = (fixtures_path / "expected-fake-executed.ipynb").read_text()
-    actual_md = convert_nb_to_md(notebook)
+    md_exporter = nbconvert.MarkdownExporter()
+    actual_md = convert_from_notebook(notebook, exporter=md_exporter)
     (fixtures_path / "actual-fake-executed.md").write_text(actual_md)
     assert "```python" in actual_md
 
@@ -74,7 +75,7 @@ def test_clean_nb():
     assert nb == json.loads(_clean_nb(json.dumps(nb)))
 
 
-def test_convert_py_to_nb_error():
+def test_convert_to_notebook_error():
     python_str = "Invalid python!"
     with pytest.raises(
         ConversionException,
@@ -82,4 +83,4 @@ def test_convert_py_to_nb_error():
         # the line with the error shows up in the message.
         match=(r"Invalid python!"),
     ):
-        convert_py_to_nb(python_str, "Title!", execute=True, reformat=False)
+        convert_to_notebook(python_str, "Title!", execute=True, reformat=False)

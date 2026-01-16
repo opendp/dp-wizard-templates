@@ -139,9 +139,8 @@ to produce other artifacts without adding clutter.
 
 ```python
 >>> from dp_wizard_templates.converters import (
-...     convert_nb_to_html,
-...     convert_nb_to_md,
-...     convert_py_to_nb,
+...     convert_from_notebook,
+...     convert_to_notebook,
 ... )
 
 >>> def notebook_template(TITLE, BLOCK, FUNCTION_NAME):
@@ -166,10 +165,10 @@ to produce other artifacts without adding clutter.
 ...     .finish()
 ... )
 
->>> notebook_ipynb = convert_py_to_nb(notebook_py, title=title, execute=True)
+>>> notebook_ipynb = convert_to_notebook(notebook_py, title=title, execute=True)
 >>> assert Path("examples/hello-world.ipynb").read_text() == notebook_ipynb
 
->>> notebook_html = convert_nb_to_html(notebook_ipynb)
+>>> notebook_html = convert_from_notebook(notebook_ipynb)
 >>> assert Path("examples/hello-world.html").read_text() == notebook_html
 
 ```

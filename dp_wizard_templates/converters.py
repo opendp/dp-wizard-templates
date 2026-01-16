@@ -1,5 +1,7 @@
+import hashlib
 import json
 import subprocess
+import warnings
 from dataclasses import dataclass
 from pathlib import Path
 from sys import executable
@@ -8,6 +10,8 @@ from tempfile import TemporaryDirectory
 import black
 import jupytext
 import nbconvert
+import nbformat
+import nbformat.warnings
 
 
 def _is_kernel_installed() -> bool:
@@ -28,7 +32,7 @@ class ConversionException(Exception):
         return f"Script to notebook conversion failed: {self.command}\n{self.stderr})"
 
 
-def convert_py_to_nb(
+def convert_to_notebook(
     python_str: str, title: str, execute: bool = False, reformat: bool = True
 ) -> str:
     """
@@ -72,8 +76,6 @@ def convert_py_to_nb(
 
 
 def _stable_hash(lines: list[str]) -> str:
-    import hashlib
-
     return hashlib.sha1("\n".join(lines).encode()).hexdigest()[:8]
 
 
@@ -100,10 +102,6 @@ def _clean_nb(nb_json: str) -> str:
 
 
 def _convert_nb_json_to_object(python_nb: str):
-    import warnings
-
-    import nbformat.warnings
-
     with warnings.catch_warnings():
         warnings.simplefilter(
             action="ignore", category=nbformat.warnings.DuplicateCellId
@@ -111,35 +109,18 @@ def _convert_nb_json_to_object(python_nb: str):
         return nbformat.reads(python_nb, as_version=4)
 
 
-def convert_nb_to_md(python_nb: str) -> str:
-    """
-    Given a notebook as a string of JSON,
-    returns markdown.
-    """
-    notebook = _convert_nb_json_to_object(python_nb)
-    exporter = nbconvert.MarkdownExporter()
-    (body, _resources) = exporter.from_notebook_node(notebook)
-    return body
+_default_exporter = nbconvert.HTMLExporter(
+    template_name="lab",
+    # The "classic" template's CSS forces large code cells on to
+    # the next page rather than breaking, so use "lab" instead.
+)
 
 
-def convert_nb_to_html(python_nb: str) -> str:
-    """
-    Given a notebook as a string of JSON,
-    returns HTML.
-    """
-    notebook = _convert_nb_json_to_object(python_nb)
-    exporter = nbconvert.HTMLExporter(
-        template_name="lab",
-        # The "classic" template's CSS forces large code cells on to
-        # the next page rather than breaking, so use "lab" instead.
-        #
-        # If you want to tweak the CSS, enable this block and make changes
-        # in nbconvert_templates/custom:
-        #
-        # template_name="custom",
-        # extra_template_basedirs=[
-        #     str((Path(__file__).parent / "nbconvert_templates").absolute())
-        # ],
-    )
+def convert_from_notebook(
+    notebook_json: str,
+    exporter: nbconvert.Exporter = _default_exporter,
+) -> str:
+    notebook = _convert_nb_json_to_object(notebook_json)
     (body, _resources) = exporter.from_notebook_node(notebook)
-    return body
+    # TODO: Pyright thinks body is a NotebookNode, but that's not right.
+    return body  # pyright: ignore[reportReturnType]
