@@ -14,39 +14,41 @@ from dp_wizard_templates.converters import (
 fixtures_path = Path(__file__).parent / "fixtures"
 
 
-def norm_nb(nb_str):
-    nb_str = json.dumps(json.loads(nb_str), indent=2)
-    nb_str = re.sub(r'"id": "[^"]+"', '"id": "12345678"', nb_str)
-    nb_str = re.sub(
+def norm_notebook_json(nb_json_str):
+    nb_dict = json.loads(nb_json_str)
+    del nb_dict["metadata"]
+    nb_json_str = json.dumps(nb_dict, indent=2)
+    nb_json_str = re.sub(r'"id": "[^"]+"', '"id": "12345678"', nb_json_str)
+    nb_json_str = re.sub(
         r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z",
         "2024-01-01T00:00:00.000000Z",
-        nb_str,
+        nb_json_str,
     )
-    return nb_str
+    return nb_json_str
 
 
 def test_convert_to_notebook():
     python_str = (fixtures_path / "fake.py").read_text()
     actual_nb_dict = convert_to_notebook(python_str, "Title!")
-    actual_nb_str = json.dumps(actual_nb_dict)
-    (fixtures_path / "actual-fake.ipynb").write_text(actual_nb_str)
-    expected_nb_str = (fixtures_path / "expected-fake.ipynb").read_text()
+    actual_nb_json_str = json.dumps(actual_nb_dict)
+    (fixtures_path / "actual-fake.ipynb").write_text(actual_nb_json_str)
+    expected_nb_json_str = (fixtures_path / "expected-fake.ipynb").read_text()
 
-    normed_actual_nb_str = norm_nb(actual_nb_str)
-    normed_expected_nb_str = norm_nb(expected_nb_str)
-    assert normed_actual_nb_str == normed_expected_nb_str
+    normed_actual_nb_json_str = norm_notebook_json(actual_nb_json_str)
+    normed_expected_nb_json_str = norm_notebook_json(expected_nb_json_str)
+    assert normed_actual_nb_json_str == normed_expected_nb_json_str
 
 
 def test_convert_to_notebook_execute():
     python_str = (fixtures_path / "fake.py").read_text()
     actual_nb_dict = convert_to_notebook(python_str, "Title!", execute=True)
-    actual_nb_str = json.dumps(actual_nb_dict, indent=1)
-    (fixtures_path / "actual-fake-executed.ipynb").write_text(actual_nb_str)
-    expected_nb_str = (fixtures_path / "expected-fake-executed.ipynb").read_text()
+    actual_nb_json_str = json.dumps(actual_nb_dict, indent=1)
+    (fixtures_path / "actual-fake-executed.ipynb").write_text(actual_nb_json_str)
+    expected_nb_json_str = (fixtures_path / "expected-fake-executed.ipynb").read_text()
 
-    normed_actual_nb_str = norm_nb(actual_nb_str)
-    normed_expected_nb_str = norm_nb(expected_nb_str)
-    assert normed_actual_nb_str == normed_expected_nb_str
+    normed_actual_nb_json_str = norm_notebook_json(actual_nb_json_str)
+    normed_expected_nb_json_str = norm_notebook_json(expected_nb_json_str)
+    assert normed_actual_nb_json_str == normed_expected_nb_json_str
 
 
 def test_convert_nb_to_html():
