@@ -7,7 +7,6 @@ import pytest
 
 from dp_wizard_templates.converters import (
     ConversionException,
-    _clean_nb,
     convert_from_notebook,
     convert_to_notebook,
 )
@@ -16,6 +15,7 @@ fixtures_path = Path(__file__).parent / "fixtures"
 
 
 def norm_nb(nb_str):
+    nb_str = json.dumps(json.loads(nb_str), indent=2)
     nb_str = re.sub(r'"id": "[^"]+"', '"id": "12345678"', nb_str)
     nb_str = re.sub(
         r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z",
@@ -27,7 +27,8 @@ def norm_nb(nb_str):
 
 def test_convert_to_notebook():
     python_str = (fixtures_path / "fake.py").read_text()
-    actual_nb_str = convert_to_notebook(python_str, "Title!")
+    actual_nb_dict = convert_to_notebook(python_str, "Title!")
+    actual_nb_str = json.dumps(actual_nb_dict)
     (fixtures_path / "actual-fake.ipynb").write_text(actual_nb_str)
     expected_nb_str = (fixtures_path / "expected-fake.ipynb").read_text()
 
@@ -38,7 +39,8 @@ def test_convert_to_notebook():
 
 def test_convert_to_notebook_execute():
     python_str = (fixtures_path / "fake.py").read_text()
-    actual_nb_str = convert_to_notebook(python_str, "Title!", execute=True)
+    actual_nb_dict = convert_to_notebook(python_str, "Title!", execute=True)
+    actual_nb_str = json.dumps(actual_nb_dict, indent=1)
     (fixtures_path / "actual-fake-executed.ipynb").write_text(actual_nb_str)
     expected_nb_str = (fixtures_path / "expected-fake-executed.ipynb").read_text()
 
@@ -48,8 +50,9 @@ def test_convert_to_notebook_execute():
 
 
 def test_convert_nb_to_html():
-    notebook = (fixtures_path / "expected-fake-executed.ipynb").read_text()
-    actual_html = convert_from_notebook(notebook)
+    notebook_str = (fixtures_path / "expected-fake-executed.ipynb").read_text()
+    notebook_dict = json.loads(notebook_str)
+    actual_html = convert_from_notebook(notebook_dict)
     (fixtures_path / "actual-fake-executed.html").write_text(actual_html)
     assert "[1]:" in actual_html
     assert "<pre>4" in actual_html
@@ -59,20 +62,15 @@ def test_convert_nb_to_html():
 
 
 def test_convert_nb_to_md():
-    notebook = (fixtures_path / "expected-fake-executed.ipynb").read_text()
+    notebook_str = (fixtures_path / "expected-fake-executed.ipynb").read_text()
+    notebook_dict = json.loads(notebook_str)
     md_exporter = nbconvert.MarkdownExporter()
-    actual_md = convert_from_notebook(notebook, exporter=md_exporter)
+    actual_md = convert_from_notebook(notebook_dict, exporter=md_exporter)
     (fixtures_path / "actual-fake-executed.md").write_text(actual_md)
     assert "```python" in actual_md
 
     expected_md = (fixtures_path / "expected-fake-executed.md").read_text()
     assert actual_md == expected_md
-
-
-def test_clean_nb():
-    # Trivial test just to get 100% branch coverage.
-    nb = {"cells": []}
-    assert nb == json.loads(_clean_nb(json.dumps(nb)))
 
 
 def test_convert_to_notebook_error():

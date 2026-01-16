@@ -165,15 +165,13 @@ to produce other artifacts without adding clutter.
 ...     .finish()
 ... )
 
->>> notebook_ipynb = convert_to_notebook(notebook_py, title=title, execute=True)
->>> assert Path("examples/hello-world.ipynb").read_text() == notebook_ipynb
-
->>> notebook_html = convert_from_notebook(notebook_ipynb)
+>>> notebook_dict = convert_to_notebook(notebook_py, title=title, execute=True)
+>>> notebook_html = convert_from_notebook(notebook_dict)
 >>> assert Path("examples/hello-world.html").read_text() == notebook_html
 
 ```
 
-The output ([HTML](examples/hello-world.html) / [Notebook](examples/hello-world.ipynb)) is short,
+The [output](examples/hello-world.html) is short,
 but it is an end-to-end demonstration of DP Wizard Templates.
 
 ## Last thoughts

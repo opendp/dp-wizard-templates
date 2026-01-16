@@ -34,7 +34,7 @@ class ConversionException(Exception):
 
 def convert_to_notebook(
     python_str: str, title: str, execute: bool = False, reformat: bool = True
-) -> str:
+) -> dict:
     """
     Given Python code as a string, returns a notebook as a string of JSON.
     (Calls jupytext as a subprocess:
@@ -72,21 +72,20 @@ def convert_to_notebook(
         raise ConversionException(command=" ".join(argv), stderr=result.stderr)
     nb_dict = json.loads(result.stdout.strip())
     nb_dict["metadata"]["title"] = title
-    return _clean_nb(json.dumps(nb_dict))
+    return _clean_nb(nb_dict)
 
 
 def _stable_hash(lines: list[str]) -> str:
     return hashlib.sha1("\n".join(lines).encode()).hexdigest()[:8]
 
 
-def _clean_nb(nb_json: str) -> str:
+def _clean_nb(nb_dict: dict) -> dict:
     """
     Given a notebook as a string of JSON, remove pip output
     and make IDs stable.
     """
-    nb = json.loads(nb_json)
     new_cells = []
-    for cell in nb["cells"]:
+    for cell in nb_dict["cells"]:
         if "pip install" in cell["source"][0]:
             cell["outputs"] = []
         # Make ID stable:
@@ -97,16 +96,8 @@ def _clean_nb(nb_json: str) -> str:
         except KeyError:
             pass
         new_cells.append(cell)
-    nb["cells"] = new_cells
-    return json.dumps(nb, indent=1)
-
-
-def _convert_nb_json_to_object(python_nb: str):
-    with warnings.catch_warnings():
-        warnings.simplefilter(
-            action="ignore", category=nbformat.warnings.DuplicateCellId
-        )
-        return nbformat.reads(python_nb, as_version=4)
+    nb_dict["cells"] = new_cells
+    return nb_dict
 
 
 _default_exporter = nbconvert.HTMLExporter(
@@ -117,10 +108,14 @@ _default_exporter = nbconvert.HTMLExporter(
 
 
 def convert_from_notebook(
-    notebook_json: str,
+    notebook_dict: dict,
     exporter: nbconvert.Exporter = _default_exporter,
 ) -> str:
-    notebook = _convert_nb_json_to_object(notebook_json)
-    (body, _resources) = exporter.from_notebook_node(notebook)
+    with warnings.catch_warnings():
+        warnings.simplefilter(
+            action="ignore", category=nbformat.warnings.DuplicateCellId
+        )
+        notebook_node = nbformat.reads(json.dumps(notebook_dict), as_version=4)
+    (body, _resources) = exporter.from_notebook_node(notebook_node)
     # TODO: Pyright thinks body is a NotebookNode, but that's not right.
     return body  # pyright: ignore[reportReturnType]
