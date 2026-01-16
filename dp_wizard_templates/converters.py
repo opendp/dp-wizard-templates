@@ -1,5 +1,7 @@
+import hashlib
 import json
 import subprocess
+import warnings
 from dataclasses import dataclass
 from pathlib import Path
 from sys import executable
@@ -8,6 +10,8 @@ from tempfile import TemporaryDirectory
 import black
 import jupytext
 import nbconvert
+import nbformat
+import nbformat.warnings
 
 
 def _is_kernel_installed() -> bool:
@@ -28,9 +32,9 @@ class ConversionException(Exception):
         return f"Script to notebook conversion failed: {self.command}\n{self.stderr})"
 
 
-def convert_py_to_nb(
+def convert_to_notebook(
     python_str: str, title: str, execute: bool = False, reformat: bool = True
-) -> str:
+) -> dict:
     """
     Given Python code as a string, returns a notebook as a string of JSON.
     (Calls jupytext as a subprocess:
@@ -68,30 +72,22 @@ def convert_py_to_nb(
         raise ConversionException(command=" ".join(argv), stderr=result.stderr)
     nb_dict = json.loads(result.stdout.strip())
     nb_dict["metadata"]["title"] = title
-    return _clean_nb(json.dumps(nb_dict))
+    return _clean_nb(nb_dict)
 
 
 def _stable_hash(lines: list[str]) -> str:
-    import hashlib
-
     return hashlib.sha1("\n".join(lines).encode()).hexdigest()[:8]
 
 
-def _clean_nb(nb_json: str) -> str:
+def _clean_nb(nb_dict: dict) -> dict:
     """
-    Given a notebook as a string of JSON, remove the coda and pip output.
-    (The code may produce reports that we do need,
-    but the code isn't actually interesting to end users.)
+    Given a notebook as a string of JSON, remove pip output
+    and make IDs stable.
     """
-    nb = json.loads(nb_json)
     new_cells = []
-    for cell in nb["cells"]:
+    for cell in nb_dict["cells"]:
         if "pip install" in cell["source"][0]:
             cell["outputs"] = []
-        # "Coda" may, or may not be followed by "\n".
-        # Be flexible!
-        if any(line.startswith("# Coda") for line in cell["source"]):
-            break
         # Make ID stable:
         cell["id"] = _stable_hash(cell["source"])
         # Delete execution metadata:
@@ -100,51 +96,26 @@ def _clean_nb(nb_json: str) -> str:
         except KeyError:
             pass
         new_cells.append(cell)
-    nb["cells"] = new_cells
-    return json.dumps(nb, indent=1)
+    nb_dict["cells"] = new_cells
+    return nb_dict
 
 
-def _convert_nb_json_to_object(python_nb: str):
-    import warnings
+_default_exporter = nbconvert.HTMLExporter(
+    template_name="lab",
+    # The "classic" template's CSS forces large code cells on to
+    # the next page rather than breaking, so use "lab" instead.
+)
 
-    import nbformat.warnings
 
+def convert_from_notebook(
+    notebook_dict: dict,
+    exporter: nbconvert.Exporter = _default_exporter,
+) -> str:
     with warnings.catch_warnings():
         warnings.simplefilter(
             action="ignore", category=nbformat.warnings.DuplicateCellId
         )
-        return nbformat.reads(python_nb, as_version=4)
-
-
-def convert_nb_to_md(python_nb: str) -> str:
-    """
-    Given a notebook as a string of JSON,
-    returns markdown.
-    """
-    notebook = _convert_nb_json_to_object(python_nb)
-    exporter = nbconvert.MarkdownExporter()
-    (body, _resources) = exporter.from_notebook_node(notebook)
-    return body
-
-
-def convert_nb_to_html(python_nb: str) -> str:
-    """
-    Given a notebook as a string of JSON,
-    returns HTML.
-    """
-    notebook = _convert_nb_json_to_object(python_nb)
-    exporter = nbconvert.HTMLExporter(
-        template_name="lab",
-        # The "classic" template's CSS forces large code cells on to
-        # the next page rather than breaking, so use "lab" instead.
-        #
-        # If you want to tweak the CSS, enable this block and make changes
-        # in nbconvert_templates/custom:
-        #
-        # template_name="custom",
-        # extra_template_basedirs=[
-        #     str((Path(__file__).parent / "nbconvert_templates").absolute())
-        # ],
-    )
-    (body, _resources) = exporter.from_notebook_node(notebook)
-    return body
+        notebook_node = nbformat.reads(json.dumps(notebook_dict), as_version=4)
+    (body, _resources) = exporter.from_notebook_node(notebook_node)
+    # TODO: Pyright thinks body is a NotebookNode, but that's not right.
+    return body  # pyright: ignore[reportReturnType]

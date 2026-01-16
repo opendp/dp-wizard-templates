@@ -258,7 +258,7 @@ class Template:
     @_check_kwargs
     def fill_expressions(self, optional=False, **kwargs) -> "Template":
         """
-        Fill in variable names, anything else that should be filled verbatim.
+        Fill in variable names and anything else that should be filled verbatim.
         """
         self._fill_inline_slots(stringifier=str, optional=optional, **kwargs)
         return self
@@ -293,4 +293,7 @@ class Template:
         if not reformat:
             return finished
 
-        return black.format_str(finished, mode=black.Mode())
+        # Final strip() helps with tutorial.md doctests:
+        # With a "\n" at the end, doctests need to include
+        # <BLANKLINE>
+        return black.format_str(finished, mode=black.Mode()).strip()
