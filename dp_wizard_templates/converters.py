@@ -1,5 +1,6 @@
 import hashlib
 import json
+import re
 import subprocess
 import warnings
 from dataclasses import dataclass
@@ -32,6 +33,20 @@ class ConversionException(Exception):
         return f"Script to notebook conversion failed: {self.command}\n{self.stderr})"
 
 
+def _preprocess_one_line(target, following) -> str:
+    if following.startswith("\n#") and not following.startswith("\n# %"):
+        target += " [markdown]"
+    return target
+
+
+def _preprocess_all_blocks(python_str: str) -> str:
+    splits = re.split(r"(^#\s+\+.*)", python_str, flags=re.MULTILINE)
+    for i in range(len(splits)):
+        if i % 2 == 1:
+            splits[i] = _preprocess_one_line(splits[i], splits[i + 1])
+    return "".join(splits)
+
+
 def convert_to_notebook(
     python_str: str, title: str, execute: bool = False, reformat: bool = True
 ) -> dict:
@@ -40,6 +55,7 @@ def convert_to_notebook(
     (Calls jupytext as a subprocess:
     Not ideal, but only the CLI is well documented.)
     """
+    python_str = _preprocess_all_blocks(python_str)
     with TemporaryDirectory() as temp_dir:
         if not _is_kernel_installed():
             subprocess.run(  # pragma: no cover

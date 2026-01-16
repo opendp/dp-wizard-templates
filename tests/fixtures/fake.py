@@ -3,13 +3,23 @@
 # -
 
 # +
-# Introduction
+# Should be markdown
 # -
 
-print(2 + 2)
+# + only: details
+# Should be markdown (details)
+# -
 
 # +
-# TODO: Support coda hiding.
+
+# Should be code
+print("2 + 2")
+
 # -
 
-print("goodbye!")
+# + only: details
+
+# Should be code (details)
+print(2 + 2)
+
+# -
