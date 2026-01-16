@@ -79,19 +79,14 @@ def _stable_hash(lines: list[str]) -> str:
 
 def _clean_nb(nb_json: str) -> str:
     """
-    Given a notebook as a string of JSON, remove the coda and pip output.
-    (The code may produce reports that we do need,
-    but the code isn't actually interesting to end users.)
+    Given a notebook as a string of JSON, remove pip output
+    and make IDs stable.
     """
     nb = json.loads(nb_json)
     new_cells = []
     for cell in nb["cells"]:
         if "pip install" in cell["source"][0]:
             cell["outputs"] = []
-        # "Coda" may, or may not be followed by "\n".
-        # Be flexible!
-        if any(line.startswith("# Coda") for line in cell["source"]):
-            break
         # Make ID stable:
         cell["id"] = _stable_hash(cell["source"])
         # Delete execution metadata:

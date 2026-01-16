@@ -36,7 +36,8 @@ def norm_nb(nb_str):
 def test_convert_py_to_nb():
     python_str = (fixtures_path / "fake.py").read_text()
     actual_nb_str = convert_py_to_nb(python_str, "Title!")
-    expected_nb_str = (fixtures_path / "fake.ipynb").read_text()
+    (fixtures_path / "actual-fake.ipynb").write_text(actual_nb_str)
+    expected_nb_str = (fixtures_path / "expected-fake.ipynb").read_text()
 
     normed_actual_nb_str = norm_nb(actual_nb_str)
     normed_expected_nb_str = norm_nb(expected_nb_str)
@@ -46,11 +47,33 @@ def test_convert_py_to_nb():
 def test_convert_py_to_nb_execute():
     python_str = (fixtures_path / "fake.py").read_text()
     actual_nb_str = convert_py_to_nb(python_str, "Title!", execute=True)
-    expected_nb_str = (fixtures_path / "fake-executed.ipynb").read_text()
+    (fixtures_path / "actual-fake-executed.ipynb").write_text(actual_nb_str)
+    expected_nb_str = (fixtures_path / "expected-fake-executed.ipynb").read_text()
 
     normed_actual_nb_str = norm_nb(actual_nb_str)
     normed_expected_nb_str = norm_nb(expected_nb_str)
     assert normed_actual_nb_str == normed_expected_nb_str
+
+
+def test_convert_nb_to_html():
+    notebook = (fixtures_path / "expected-fake-executed.ipynb").read_text()
+    actual_html = convert_nb_to_html(notebook)
+    (fixtures_path / "actual-fake-executed.html").write_text(actual_html)
+    assert "[1]:" in actual_html
+    assert "<pre>4" in actual_html
+
+    expected_html = (fixtures_path / "expected-fake-executed.html").read_text()
+    assert actual_html == expected_html
+
+
+def test_convert_nb_to_md():
+    notebook = (fixtures_path / "expected-fake-executed.ipynb").read_text()
+    actual_md = convert_nb_to_md(notebook)
+    (fixtures_path / "actual-fake-executed.md").write_text(actual_md)
+    assert "```python" in actual_md
+
+    expected_md = (fixtures_path / "expected-fake-executed.md").read_text()
+    assert actual_md == expected_md
 
 
 def test_clean_nb():
@@ -68,33 +91,3 @@ def test_convert_py_to_nb_error():
         match=(r"Invalid python!"),
     ):
         convert_py_to_nb(python_str, "Title!", execute=True, reformat=False)
-
-
-def test_convert_nb_to_html():
-    notebook = (fixtures_path / "fake-executed.ipynb").read_text()
-    html = convert_nb_to_html(notebook)
-    assert "[1]:" in html
-    assert "<pre>4" in html
-    assert re.search(r'<div class="[^"]+ celltag_test123" [^>]+>', html)
-
-
-def test_convert_nb_to_md():
-    notebook = (fixtures_path / "fake-executed.ipynb").read_text()
-    md = convert_nb_to_md(notebook)
-    assert (
-        md
-        == """```python
-%pip install pytest
-```
-
-Introduction
-
-
-```python
-print(2 + 2)
-```
-
-    4
-
-"""
-    )

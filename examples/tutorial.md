@@ -156,12 +156,6 @@ to produce other artifacts without adding clutter.
 ...
 ...     FUNCTION_NAME(-10)
 ...     # -
-...
-...     # # Coda
-...     #
-...     # Extra computations that will not be rendered.
-...
-...     2 + 2
 
 
 >>> title = "Hello World!"
