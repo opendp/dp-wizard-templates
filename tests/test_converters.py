@@ -75,6 +75,7 @@ def test_convert_nb_to_html():
     html = convert_nb_to_html(notebook)
     assert "[1]:" in html
     assert "<pre>4" in html
+    assert re.search(r'<div class="[^"]+ celltag_test123" [^>]+>', html)
 
 
 def test_convert_nb_to_md():

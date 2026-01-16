@@ -2,7 +2,7 @@
 # %pip install pytest
 # -
 
-# + [markdown] css_class="test123"
+# + [markdown] tags=["test123"]
 # Introduction
 # -
 
