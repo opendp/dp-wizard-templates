@@ -14,14 +14,22 @@
         tags = tags.union(el_tags)
     });
 
-    const options_html = (
-        tags
-        .values()
-        .map((tag) => `<option>${tag}</option>`)
-        .toArray()
-        .join("\n")
-    ) + "<option>(none)</option>";
+    const tag_values = tags.values().toArray().sort();
 
+    if (tag_values.length === 0) {
+        // Do not inject HTML if there will be no options:
+        return;
+    }
+
+    const options_html = (
+        tag_values
+        // Don't need to escape because tag is from a class name:
+        .map((tag) => `<option value="${tag}">${tag.replaceAll("_", " ")}</option>`)
+        .join("\n")
+    ) + '<option value="">(none)</option>';  // Empty value is falsy in show_only().
+
+    // HTML skeleton is just copy-paste from notebook source:
+    // Looks ok, but the semantics aren't correct.
     $("main").prepend(`
         <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
             <div class="jp-Cell-inputWrapper">
@@ -38,4 +46,19 @@
             </div>
         </div>
     `);
+
+    function show_only(tag) {
+        $(`div[class*='${prefix}']`).hide();
+        if (tag) {
+            $(`div.${prefix}${tag}`).show();
+        }
+    }
+
+    const default_tag = tag_values[0];
+    show_only(default_tag);
+
+    $("select").on("change", (event) => {
+        const tag = event.target.value;
+        show_only(tag);
+    })
 })();

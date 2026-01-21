@@ -132,9 +132,11 @@ def convert_from_notebook(
     By default, converts to HTML. For PDF or Markdown, specify an
     [exporter](https://nbconvert.readthedocs.io/en/latest/api/exporters.html#specialized-exporter-classes).
 
-    If the output is HTML, the default postprocess adds UI to the notebook
-    which allow sections to be shown or hidden based on css class,
-    if tag metadata has been specified.
+    If the output is HTML, and tag metadata is present on cells,
+    the tags will be collected into a select element at the top of the page.
+    The first tag value, sorted alphabetically, will be selected by default.
+    This allows the user to toggle between a brief report and a full tutorial,
+    for example.
     """
     with warnings.catch_warnings():
         warnings.simplefilter(
