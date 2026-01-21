@@ -73,11 +73,11 @@ def _check_kwargs(func):
     return wrapper
 
 
-_Token = namedtuple("_Token", ["string", "is_slot", "is_prefix"])
+_Token = namedtuple("_Token", ["string", "is_slot", "is_prefix", "is_period"])
 
 
 _line_re = re.compile(r"(^[ \t]*(?:#\s*)?)", flags=re.MULTILINE)
-_slot_re = re.compile(r"(\b[A-Z][A-Z_]{2,}\b)")
+_slot_re = re.compile(r"(\.?)(\b[A-Z][A-Z_]{2,}\b)")
 
 
 class _Slots:
@@ -88,13 +88,20 @@ class _Slots:
             if i % 2 == 1:
                 # Include prefix, even if empty string.
                 self._tokens.append(
-                    _Token(line_substring, is_prefix=True, is_slot=False)
+                    _Token(
+                        line_substring, is_prefix=True, is_slot=False, is_period=False
+                    )
                 )
             else:
                 for j, slot_substring in enumerate(_slot_re.split(line_substring)):
                     if slot_substring:
                         self._tokens.append(
-                            _Token(slot_substring, is_prefix=False, is_slot=j % 2 == 1)
+                            _Token(
+                                slot_substring,
+                                is_prefix=False,
+                                is_slot=j % 3 == 2,
+                                is_period=j % 3 == 1,
+                            )
                         )
 
     def _fill(
@@ -109,6 +116,7 @@ class _Slots:
                         new_value,
                         is_prefix=False,
                         is_slot=False,
+                        is_period=False,
                     )
                 else:
                     prev = self._tokens[i - 1]
@@ -119,6 +127,7 @@ class _Slots:
                         f"\n{prefix}".join(new_value.splitlines()),
                         is_prefix=False,
                         is_slot=False,
+                        is_period=False,
                     )
         if error_if_no_match and not found_match:
             raise TemplateException(f"no '{slot_name}' slot to fill with '{new_value}'")
