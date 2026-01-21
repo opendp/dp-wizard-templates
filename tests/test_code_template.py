@@ -395,8 +395,10 @@ def test_optional():
 
 
 def test_default_idiom():
-    def fill_defaults(template: Template):
-        return template.fill_expressions(VERSION="0.1.2.3", optional=True)
+    class TemplateWithDefaults(Template):
+        def finish(self, reformat=False):
+            self.fill_expressions(VERSION="0.1.2.3", optional=True)
+            return super().finish(reformat=reformat)
 
     def template_without(ARG):
         print(ARG)
@@ -406,20 +408,19 @@ def test_default_idiom():
         print(ARG)
 
     assert (
-        fill_defaults(Template(template_without).fill_values(ARG="hello")).finish()
+        TemplateWithDefaults(template_without).fill_values(ARG="hello").finish()
         == "print('hello')"
     )
 
     assert (
-        fill_defaults(Template(template_with).fill_values(ARG="hello")).finish()
+        TemplateWithDefaults(template_with).fill_values(ARG="hello").finish()
         == "# Version: 0.1.2.3\nprint('hello')"
     )
 
     assert (
-        fill_defaults(
-            Template(template_with)
-            .fill_values(ARG="hello")
-            .fill_expressions(VERSION="1.0")
-        ).finish()
+        TemplateWithDefaults(template_with)
+        .fill_values(ARG="hello")
+        .fill_expressions(VERSION="1.0")
+        .finish()
         == "# Version: 1.0\nprint('hello')"
     )

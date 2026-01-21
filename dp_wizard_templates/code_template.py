@@ -286,6 +286,15 @@ class Template:
         """
         Confirms that all slots are filled and returns the resulting string.
         If `reformat` is supplied, code is formatted with black.
+
+        If you have values that that should be optional defaults,
+        consider subclassing `Template`, and overriding `finish()`. For example:
+        ```python
+        class TemplateWithDefaultVersion(Template):
+            def finish(self, reformat=False):
+                self.fill_expressions(VERSION="0.1.2.3", optional=True)
+                return super().finish(reformat=reformat)
+        ```
         """
         # The reformat default is False here,
         # because it is true downstream for notebook generation,
