@@ -124,21 +124,15 @@ class _Slots:
         fill_inline=True,
         require_period=False,
     ):
-        if not fill_inline and require_period:
-            raise Exception(
-                f"Unsupported: {fill_inline=}, {require_period=}"
-            )  # pragma no cover
         found_match = False
         for i in range(len(self._tokens)):
             if self._tokens[i].is_slot and self._tokens[i].string == slot_name:
-                if require_period:
-                    if i == 0 or not self._tokens[i - 1].is_period:  # pragma no cover
-                        raise Exception(f"No preceding period: {slot_name=}")
                 found_match = True
-                if require_period and new_value is None:  # pragma no cover
-                    self._tokens[i] = _text_token("")
+                if require_period and not new_value:
+                    if i == 0 or not self._tokens[i - 1].is_period:
+                        raise TemplateException(f"No preceding period: {slot_name=}")
                     self._tokens[i - 1] = _text_token("")
-                elif fill_inline:
+                if fill_inline:
                     self._tokens[i] = _text_token(new_value)
                 else:
                     prev = self._tokens[i - 1]
@@ -277,12 +271,16 @@ class Template:
         self,
         stringifier: Callable[[str], str],
         optional: bool,
+        require_period: bool = False,
         **kwargs,
     ) -> None:
         def function(k, v, errors):
             try:
                 self._slots.fill_inline(
-                    k, stringifier(v), error_if_no_match=not optional
+                    k,
+                    stringifier(v),
+                    error_if_no_match=not optional,
+                    require_period=require_period,
                 )
             except TemplateException as e:
                 errors.append(", ".join(e.args))
@@ -319,6 +317,25 @@ class Template:
         Fill in JSON-serializable values.
         """
         self._fill_inline_slots(stringifier=_check_repr, optional=optional, **kwargs)
+        return self
+
+    @_check_kwargs
+    def fill_attributes(self, optional=False, **kwargs) -> "Template":
+        """
+        If value is falsy, preceding `.` in the template is also cleared.
+        """
+
+        def make_falsy_empty(input):
+            if not input:
+                return ""
+            return str(input)
+
+        self._fill_inline_slots(
+            stringifier=make_falsy_empty,
+            optional=optional,
+            require_period=True,
+            **kwargs,
+        )
         return self
 
     @_check_kwargs

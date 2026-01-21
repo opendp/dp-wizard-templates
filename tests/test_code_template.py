@@ -479,3 +479,38 @@ def test_default_idiom():
         .finish()
         == "# Version: 1.0\nprint('hello')"
     )
+
+
+def test_fill_attributes_none():
+    def template(old):
+        new = old.DO_THIS.NOT_THAT  # noqa: F841
+
+    assert (
+        Template(template).fill_attributes(DO_THIS="do_this()", NOT_THAT=None).finish()
+        == "new = old.do_this()"
+    )
+
+
+def test_fill_attributes_missing_slot():
+    def template(old):
+        new = old.DO_THIS  # noqa: F841
+
+    with pytest.raises(
+        TemplateException,
+        match=re.escape(
+            "In function template, no 'DO_THAT' slot to fill with '':\n"
+            "new = old.DO_THIS"
+        ),
+    ):
+        Template(template).fill_attributes(DO_THAT=None).finish()
+
+
+def test_fill_attributes_start_of_line():
+    def template(new):
+        DO_THIS = new  # noqa: F841
+
+    with pytest.raises(
+        TemplateException,
+        match=re.escape("No preceding period: slot_name='DO_THIS'"),
+    ):
+        Template(template).fill_attributes(DO_THIS=None).finish()
