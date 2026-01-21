@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 0.8.0
+
+- Better testing of comment stripping [#48](https://github.com/opendp/dp-wizard-templates/pull/48)
+- Use tag metadata to make select [#45](https://github.com/opendp/dp-wizard-templates/pull/45)
+- Drop "coda"; parameterize exporter [#44](https://github.com/opendp/dp-wizard-templates/pull/44)
+- Add pdoc for documentation [#43](https://github.com/opendp/dp-wizard-templates/pull/43)
+- Upgrade doc actions [#42](https://github.com/opendp/dp-wizard-templates/pull/42)
+- Handle user values that include slot names [#41](https://github.com/opendp/dp-wizard-templates/pull/41)
+
 ## 0.7.0
 
 - unless -> when [#35](https://github.com/opendp/dp-wizard-templates/pull/35)
