@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.8.1
+
+- support `fill_attributes` [#51](https://github.com/opendp/dp-wizard-templates/pull/51)
+
 ## 0.8.0
 
 - Better testing of comment stripping [#48](https://github.com/opendp/dp-wizard-templates/pull/48)
