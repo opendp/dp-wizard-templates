@@ -39,8 +39,7 @@ def convert_to_notebook(
     """
     Given Python code as a string, returns a notebook,
     with the JSON represented as a dict.
-    (Calls jupytext as a subprocess:
-    Not ideal, but only the CLI is well documented.)
+    Calls jupytext as a subprocess.
     """
     with TemporaryDirectory() as temp_dir:
         if not _is_kernel_installed():
@@ -57,6 +56,8 @@ def convert_to_notebook(
             python_str = black.format_str(python_str, mode=black.Mode(line_length=74))
         py_path.write_text(python_str)
 
+        # TODO: Use an API instead the the CLI.
+        # https://github.com/opendp/dp-wizard-templates/issues/46
         argv = [executable] + "-m jupytext --from .py --to .ipynb --output -".split(" ")
         if execute:
             argv.append("--execute")

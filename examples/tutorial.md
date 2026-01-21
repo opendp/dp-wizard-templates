@@ -132,10 +132,10 @@ format](https://jupytext.readthedocs.io/en/latest/formats-scripts.html#the-light
 Contiguous comments are coverted to markdown cells,
 and contiguous lines of code are converted to code cells.
 
-One additional feature is that a section with a `# Coda` header
-will be stripped from notebook output. This allows a notebook
-to produce other artifacts without adding clutter.
-
+If tag metadata is included, the tags will be collected into a select element,
+with the first tag value, sorted alphabetically, selected by default.
+This allows the user to toggle between a brief report and a full tutorial,
+for example.
 
 ```python
 >>> from dp_wizard_templates.converters import (
@@ -144,11 +144,13 @@ to produce other artifacts without adding clutter.
 ... )
 
 >>> def notebook_template(TITLE, BLOCK, FUNCTION_NAME):
+...     # + [markdown] tags=["Introduction"]
 ...     # # TITLE
 ...     #
 ...     # Comments will be rendered as *Markdown*.
 ...     # The `+` and `-` below ensure that only one code cell is produced,
 ...     # even though the lines are not contiguous
+...     # -
 ...
 ...     # +
 ...     BLOCK
