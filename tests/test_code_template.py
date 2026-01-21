@@ -26,28 +26,51 @@ def test_line_re():
 
 
 def test_slot_re():
-    assert _slot_re.split("A AB ABC ABC_XYZ TODO N0_NUMBERS") == [
+    assert _slot_re.split("A AB ABC.ABC_XYZ TODO N0_NUMBERS") == [
         "A AB ",
+        "",  # optional period
         "ABC",  # slot
-        " ",
+        "",
+        ".",  # optional period
         "ABC_XYZ",  # slot
         " ",
+        "",  # optional period
         "TODO",  # slot
         " N0_NUMBERS",
     ]
 
 
+def prefix(string):
+    return _Token(string, is_slot=False, is_prefix=True, is_period=False)
+
+
+def slot(string):
+    return _Token(string, is_slot=True, is_prefix=False, is_period=False)
+
+
+def text(string):
+    return _Token(string, is_slot=False, is_prefix=False, is_period=False)
+
+
+def period(string):
+    return _Token(string, is_slot=False, is_prefix=False, is_period=True)
+
+
 def test_slots_fill_inline():
-    slots = _Slots("START and END")
+    slots = _Slots("START and THE.END.")
     assert slots._tokens == [
-        _Token(string="", is_slot=False, is_prefix=True),
-        _Token(string="START", is_slot=True, is_prefix=False),
-        _Token(string=" and ", is_slot=False, is_prefix=False),
-        _Token(string="END", is_slot=True, is_prefix=False),
+        prefix(""),
+        slot("START"),
+        text(" and "),
+        slot("THE"),
+        period("."),
+        slot("END"),
+        text("."),
     ]
     slots.fill_inline("START", "END")
     slots.fill_inline("END", "START")
-    assert slots.finish() == "END and START"
+    slots.fill_inline("THE", "")
+    assert slots.finish() == "END and .START."
 
 
 def test_slots_fill_block():
@@ -58,16 +81,16 @@ CODE
     # COMMENT"""
     )
     assert slots._tokens == [
-        _Token(string="", is_slot=False, is_prefix=True),
-        _Token(string="intro\n", is_slot=False, is_prefix=False),
-        _Token(string="", is_slot=False, is_prefix=True),
-        _Token(string="CODE", is_slot=True, is_prefix=False),
-        _Token(string="\n", is_slot=False, is_prefix=False),
-        _Token(string="    ", is_slot=False, is_prefix=True),
-        _Token(string="INDENTED", is_slot=True, is_prefix=False),
-        _Token(string="\n", is_slot=False, is_prefix=False),
-        _Token(string="    # ", is_slot=False, is_prefix=True),
-        _Token(string="COMMENT", is_slot=True, is_prefix=False),
+        prefix(""),
+        text("intro\n"),
+        prefix(""),
+        slot("CODE"),
+        text("\n"),
+        prefix("    "),
+        slot("INDENTED"),
+        text("\n"),
+        prefix("    # "),
+        slot("COMMENT"),
     ]
     slots.fill_block("CODE", "if 'hello world':")
     slots.fill_block("INDENTED", "if foo:\n    bar()")
@@ -456,3 +479,38 @@ def test_default_idiom():
         .finish()
         == "# Version: 1.0\nprint('hello')"
     )
+
+
+def test_fill_attributes_none():
+    def template(old):
+        new = old.DO_THIS.NOT_THAT  # noqa: F841
+
+    assert (
+        Template(template).fill_attributes(DO_THIS="do_this()", NOT_THAT=None).finish()
+        == "new = old.do_this()"
+    )
+
+
+def test_fill_attributes_missing_slot():
+    def template(old):
+        new = old.DO_THIS  # noqa: F841
+
+    with pytest.raises(
+        TemplateException,
+        match=re.escape(
+            "In function template, no 'DO_THAT' slot to fill with '':\n"
+            "new = old.DO_THIS"
+        ),
+    ):
+        Template(template).fill_attributes(DO_THAT=None).finish()
+
+
+def test_fill_attributes_start_of_line():
+    def template(new):
+        DO_THIS = new  # noqa: F841
+
+    with pytest.raises(
+        TemplateException,
+        match=re.escape("No preceding period: slot_name='DO_THIS'"),
+    ):
+        Template(template).fill_attributes(DO_THIS=None).finish()

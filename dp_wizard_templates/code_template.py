@@ -73,11 +73,20 @@ def _check_kwargs(func):
     return wrapper
 
 
-_Token = namedtuple("_Token", ["string", "is_slot", "is_prefix"])
+_Token = namedtuple("_Token", ["string", "is_slot", "is_prefix", "is_period"])
 
 
 _line_re = re.compile(r"(^[ \t]*(?:#\s*)?)", flags=re.MULTILINE)
-_slot_re = re.compile(r"(\b[A-Z][A-Z_]{2,}\b)")
+_slot_re = re.compile(r"(\.?)(\b[A-Z][A-Z_]{2,}\b)")
+
+
+def _text_token(string):
+    return _Token(
+        string,
+        is_prefix=False,
+        is_slot=False,
+        is_period=False,
+    )
 
 
 class _Slots:
@@ -88,49 +97,79 @@ class _Slots:
             if i % 2 == 1:
                 # Include prefix, even if empty string.
                 self._tokens.append(
-                    _Token(line_substring, is_prefix=True, is_slot=False)
+                    _Token(
+                        line_substring,
+                        is_prefix=True,
+                        is_slot=False,
+                        is_period=False,
+                    )
                 )
             else:
                 for j, slot_substring in enumerate(_slot_re.split(line_substring)):
                     if slot_substring:
                         self._tokens.append(
-                            _Token(slot_substring, is_prefix=False, is_slot=j % 2 == 1)
+                            _Token(
+                                slot_substring,
+                                is_prefix=False,
+                                is_slot=j % 3 == 2,
+                                is_period=j % 3 == 1,
+                            )
                         )
 
     def _fill(
-        self, slot_name: str, new_value: str, error_if_no_match=True, fill_inline=True
+        self,
+        slot_name: str,
+        new_value: str,
+        error_if_no_match=True,
+        fill_inline=True,
+        require_period=False,
     ):
         found_match = False
         for i in range(len(self._tokens)):
             if self._tokens[i].is_slot and self._tokens[i].string == slot_name:
                 found_match = True
+                if require_period and not new_value:
+                    if i == 0 or not self._tokens[i - 1].is_period:
+                        raise TemplateException(f"No preceding period: {slot_name=}")
+                    self._tokens[i - 1] = _text_token("")
                 if fill_inline:
-                    self._tokens[i] = _Token(
-                        new_value,
-                        is_prefix=False,
-                        is_slot=False,
-                    )
+                    self._tokens[i] = _text_token(new_value)
                 else:
                     prev = self._tokens[i - 1]
                     if not prev.is_prefix:
                         raise TemplateException("expected prefix")
                     prefix = prev.string
-                    self._tokens[i] = _Token(
-                        f"\n{prefix}".join(new_value.splitlines()),
-                        is_prefix=False,
-                        is_slot=False,
+                    self._tokens[i] = _text_token(
+                        f"\n{prefix}".join(new_value.splitlines())
                     )
         if error_if_no_match and not found_match:
             raise TemplateException(f"no '{slot_name}' slot to fill with '{new_value}'")
 
-    def fill_inline(self, slot_name: str, new_value: str, error_if_no_match=True):
+    def fill_inline(
+        self,
+        slot_name: str,
+        new_value: str,
+        error_if_no_match=True,
+        require_period=False,
+    ):
         self._fill(
-            slot_name, new_value, error_if_no_match=error_if_no_match, fill_inline=True
+            slot_name,
+            new_value,
+            error_if_no_match=error_if_no_match,
+            require_period=require_period,
         )
 
-    def fill_block(self, slot_name: str, new_value: str, error_if_no_match=True):
+    def fill_block(
+        self,
+        slot_name: str,
+        new_value: str,
+        error_if_no_match=True,
+    ):
         self._fill(
-            slot_name, new_value, error_if_no_match=error_if_no_match, fill_inline=False
+            slot_name,
+            new_value,
+            error_if_no_match=error_if_no_match,
+            fill_inline=False,
         )
 
     def finish(self, ignore: Iterable[str] = tuple()):
@@ -232,12 +271,16 @@ class Template:
         self,
         stringifier: Callable[[str], str],
         optional: bool,
+        require_period: bool = False,
         **kwargs,
     ) -> None:
         def function(k, v, errors):
             try:
                 self._slots.fill_inline(
-                    k, stringifier(v), error_if_no_match=not optional
+                    k,
+                    stringifier(v),
+                    error_if_no_match=not optional,
+                    require_period=require_period,
                 )
             except TemplateException as e:
                 errors.append(", ".join(e.args))
@@ -274,6 +317,25 @@ class Template:
         Fill in JSON-serializable values.
         """
         self._fill_inline_slots(stringifier=_check_repr, optional=optional, **kwargs)
+        return self
+
+    @_check_kwargs
+    def fill_attributes(self, optional=False, **kwargs) -> "Template":
+        """
+        If value is falsy, preceding `.` in the template is also cleared.
+        """
+
+        def make_falsy_empty(input):
+            if not input:
+                return ""
+            return str(input)
+
+        self._fill_inline_slots(
+            stringifier=make_falsy_empty,
+            optional=optional,
+            require_period=True,
+            **kwargs,
+        )
         return self
 
     @_check_kwargs
