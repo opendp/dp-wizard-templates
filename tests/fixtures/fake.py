@@ -1,25 +1,31 @@
+# `pip install` output should be stripped:
+
 # +
 # %pip install pytest
 # -
 
-# +
-# Should be markdown
+# Should be markdown (implicit)
+
+# + [markdown]
+# Should be markdown (explicit)
 # -
 
-# + only: details
-# Should be markdown (details)
+# + [markdown] tags=["my_css_class"]
+# Should be markdown (tags)
 # -
 
 # +
 
 # Should be code
+
 print("2 + 2")
 
 # -
 
-# + only: details
+# + tags=["my_css_class"]
 
-# Should be code (details)
+# Should be code (tags)
+
 print(2 + 2)
 
 # -

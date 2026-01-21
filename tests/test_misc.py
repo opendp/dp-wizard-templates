@@ -9,6 +9,7 @@ tests = {
     "flake8 linting": "flake8 . --count --show-source --statistics",
     "pyright type checking": "pyright",
     "precommit checks": "pre-commit run --all-files",
+    "build docs": "./scripts/docs.sh",
 }
 
 

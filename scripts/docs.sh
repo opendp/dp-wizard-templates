@@ -3,6 +3,8 @@
 set -euo pipefail
 
 PDOC_ALLOW_EXEC=1 pdoc -o docs/ dp_wizard_templates
-cp -a examples docs/
+# Copying __pycache__ would cause problems:
+mkdir docs/examples || true
+cp examples/*.* docs/examples
 
-echo "Read docs at: docs/index.html"
+echo "Docs available at: docs/index.html"
