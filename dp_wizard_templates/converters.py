@@ -115,9 +115,12 @@ def _default_postprocess(input: str) -> str:
     closing_tag = "</html>\n"
     assert input.endswith(closing_tag)
     ui_javascript = (Path(__file__).parent / "ui.js").read_text()
-    # The HTML export already has references to cdnjs, so stick with that for consistency.
+    # The HTML export already has references to cdnjs, so stick with that.
     html_fragment = f"""
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.slim.min.js" integrity="sha512-sNylduh9fqpYUK5OYXWcBleGzbZInWj8yCJAU57r1dpSK9tP2ghf/SRYCMj+KsslFkCOt3TvJrX2AV/Gc3wOqA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.slim.min.js"
+    integrity="sha512-sNylduh9fqpYUK5OYXWcBleGzbZInWj8yCJAU57r1dpSK9tP2ghf/SRYCMj+KsslFkCOt3TvJrX2AV/Gc3wOqA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>{ui_javascript}</script>
 """
     return input.replace(closing_tag, html_fragment + closing_tag)
