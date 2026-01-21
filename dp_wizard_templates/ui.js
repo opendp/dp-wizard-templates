@@ -13,5 +13,22 @@
         );
         tags = tags.union(el_tags)
     });
-    console.log(tags);
+
+    $("main").prepend(`
+        <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+            <div class="jp-Cell-inputWrapper">
+                <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+                </div>
+                <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+                    Show:
+                </div>
+                <div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+                    <select>
+                        <option>Report</option>
+                        <option>(none)</option>
+                    <select>
+                </div>
+            </div>
+        </div>
+    `);
 })();
