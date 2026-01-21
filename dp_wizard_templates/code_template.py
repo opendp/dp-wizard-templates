@@ -29,17 +29,6 @@ def _get_body(func):
     # and cleandoc handles the first line differently.
     source_lines[0] = ""
     body = inspect.cleandoc("\n".join(source_lines))
-    comments_to_strip = [
-        r"\s+#\s+type:\s+ignore\s*",
-        r"\s+#\s+noqa:.+\s*",
-        r"\s+#\s+pragma:\s+no cover\s*",
-    ]
-    for comment_re in comments_to_strip:
-        body = re.sub(
-            comment_re,
-            "\n",
-            body,
-        )
 
     return body
 
@@ -188,10 +177,10 @@ class Template:
         if root is None:
             if callable(template):
                 self._source = "function template"
-                self._slots = _Slots(_get_body(template))
+                body = _get_body(template)
             else:
                 self._source = "string template"
-                self._slots = _Slots(template)
+                body = template
         else:
             if callable(template):
                 raise TemplateException(
@@ -201,7 +190,20 @@ class Template:
                 template_name = f"_{template}.py"
                 template_path = root / template_name
                 self._source = f"'{template_name}'"
-                self._slots = _Slots(template_path.read_text())
+                body = template_path.read_text()
+
+        comments_to_strip = [
+            r"\s+#\s+type:\s+ignore\s*",
+            r"\s+#\s+noqa:.+\s*",
+            r"\s+#\s+pragma:\s+no cover\s*",
+        ]
+        for comment_re in comments_to_strip:
+            body = re.sub(
+                comment_re,
+                "\n",
+                body,
+            )
+        self._slots = _Slots(body)
 
         self._ignore = ignore
 
@@ -284,6 +286,15 @@ class Template:
         """
         Confirms that all slots are filled and returns the resulting string.
         If `reformat` is supplied, code is formatted with black.
+
+        If you have values that that should be optional defaults,
+        consider subclassing `Template`, and overriding `finish()`. For example:
+        ```python
+        class TemplateWithDefaultVersion(Template):
+            def finish(self, reformat=False):
+                self.fill_expressions(VERSION="0.1.2.3", optional=True)
+                return super().finish(reformat=reformat)
+        ```
         """
         # The reformat default is False here,
         # because it is true downstream for notebook generation,

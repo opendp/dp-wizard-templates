@@ -27,7 +27,7 @@ def norm_notebook_json(nb_json_str):
     return nb_json_str
 
 
-def test_convert_to_notebook():
+def test_convert_python_to_notebook():
     python_str = (fixtures_path / "fake.py").read_text()
     actual_nb_dict = convert_to_notebook(python_str, "Title!")
     actual_nb_json_str = json.dumps(actual_nb_dict)
@@ -39,7 +39,7 @@ def test_convert_to_notebook():
     assert normed_actual_nb_json_str == normed_expected_nb_json_str
 
 
-def test_convert_to_notebook_execute():
+def test_convert_python_to_notebook_execute():
     python_str = (fixtures_path / "fake.py").read_text()
     actual_nb_dict = convert_to_notebook(python_str, "Title!", execute=True)
     actual_nb_json_str = json.dumps(actual_nb_dict, indent=1)
@@ -51,7 +51,7 @@ def test_convert_to_notebook_execute():
     assert normed_actual_nb_json_str == normed_expected_nb_json_str
 
 
-def test_convert_nb_to_html():
+def test_convert_notebook_to_html():
     notebook_str = (fixtures_path / "expected-fake-executed.ipynb").read_text()
     notebook_dict = json.loads(notebook_str)
     actual_html = convert_from_notebook(notebook_dict)
@@ -63,7 +63,7 @@ def test_convert_nb_to_html():
     assert actual_html == expected_html
 
 
-def test_convert_nb_to_md():
+def test_convert_notebook_to_markdown():
     notebook_str = (fixtures_path / "expected-fake-executed.ipynb").read_text()
     notebook_dict = json.loads(notebook_str)
     md_exporter = nbconvert.MarkdownExporter()
@@ -75,7 +75,7 @@ def test_convert_nb_to_md():
     assert actual_md == expected_md
 
 
-def test_convert_to_notebook_error():
+def test_convert_python_to_notebook_error():
     python_str = "Invalid python!"
     with pytest.raises(
         ConversionException,

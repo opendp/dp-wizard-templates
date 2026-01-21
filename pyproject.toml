@@ -21,7 +21,7 @@ GitHub = "https://github.com/opendp/dp-wizard-templates"
 Homepage = "https://opendp.github.io/dp-wizard-templates"
 
 [tool.pyright]
-ignore = ["examples/"]
+ignore = ["examples/", "docs/"]
 
 [tool.isort]
 profile = "black"
