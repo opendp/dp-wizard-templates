@@ -110,7 +110,17 @@ _default_exporter = nbconvert.HTMLExporter(
 
 
 def _default_postprocess(input: str) -> str:
-    return input
+    if not input.startswith("<!DOCTYPE html>"):
+        return input
+    closing_tag = "</html>\n"
+    assert input.endswith(closing_tag)
+    ui_javascript = (Path(__file__).parent / "ui.js").read_text()
+    # The HTML export already has references to cdnjs, so stick with that for consistency.
+    html_fragment = f"""
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.slim.min.js" integrity="sha512-sNylduh9fqpYUK5OYXWcBleGzbZInWj8yCJAU57r1dpSK9tP2ghf/SRYCMj+KsslFkCOt3TvJrX2AV/Gc3wOqA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>{ui_javascript}</script>
+"""
+    return input.replace(closing_tag, html_fragment + closing_tag)
 
 
 def convert_from_notebook(
@@ -118,6 +128,14 @@ def convert_from_notebook(
     exporter: nbconvert.Exporter = _default_exporter,
     postprocess: Callable[[str], str] = _default_postprocess,
 ) -> str:
+    """
+    By default, converts to HTML. For PDF or Markdown, specify an
+    [exporter](https://nbconvert.readthedocs.io/en/latest/api/exporters.html#specialized-exporter-classes).
+
+    If the output is HTML, the default postprocess adds UI to the notebook
+    which allow sections to be shown or hidden based on css class,
+    if tag metadata has been specified.
+    """
     with warnings.catch_warnings():
         warnings.simplefilter(
             action="ignore", category=nbformat.warnings.DuplicateCellId
