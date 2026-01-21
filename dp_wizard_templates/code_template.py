@@ -193,15 +193,18 @@ class Template:
                 body = template_path.read_text()
 
         comments_to_strip = [
-            r"\s+#\s+type:\s+ignore\s*",
-            r"\s+#\s+noqa:.+\s*",
-            r"\s+#\s+pragma:\s+no cover\s*",
+            # Not perfect, but without getting an AST
+            # we can't relly tell if one of these is a comment or not.
+            r"\s*#\s*type:\s*ignore\s*$",
+            r"\s*#\s*noqa:\s*\w+\s*$",
+            r"\s*#\s*pragma:\s*no cover\s*$",
         ]
         for comment_re in comments_to_strip:
             body = re.sub(
                 comment_re,
-                "\n",
+                "",
                 body,
+                flags=re.MULTILINE,
             )
         self._slots = _Slots(body)
 

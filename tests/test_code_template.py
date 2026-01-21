@@ -128,21 +128,53 @@ def test_strip_pragma():
     def template():
         pass  # pragma: no cover
 
-    assert Template(template).finish() == "pass\n"
+    assert Template(template).finish() == "pass"
 
 
 def test_strip_noqa():
     def template():
-        pass  # noqa: B950 (explanation here!)
+        pass  # noqa: B950
 
-    assert Template(template).finish() == "pass\n"
+    assert Template(template).finish() == "pass"
 
 
 def test_strip_type_ignore():
     def template():
         pass  # type: ignore
 
-    assert Template(template).finish() == "pass\n"
+    assert Template(template).finish() == "pass"
+
+
+def test_noqa_leak():
+    def template():
+        print("# noqa: B950")
+
+    assert Template(template).finish() == 'print("# noqa: B950")'
+
+
+@pytest.mark.xfail(reason="The regex can not cover all possible cases")
+def test_strip_noqa_with_extra_comment():
+    def template():
+        pass  # noqa: B950 ... and here's why!
+
+    assert Template(template).finish() == "pass"
+
+
+@pytest.mark.xfail(reason="The regex covers some cases it shouldn't")
+def test_strip_noqa_inside_string():
+    def template():
+        print(
+            """
+            not really a comment:  # noqa: B950
+        """
+        )
+
+    assert (
+        Template(template).finish()
+        == '''print("""
+    not really a comment:  # noqa: B950
+""")'''
+    )
 
 
 def test_def_too_long():
