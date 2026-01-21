@@ -80,6 +80,15 @@ _line_re = re.compile(r"(^[ \t]*(?:#\s*)?)", flags=re.MULTILINE)
 _slot_re = re.compile(r"(\.?)(\b[A-Z][A-Z_]{2,}\b)")
 
 
+def _text_token(string):
+    return _Token(
+        string,
+        is_prefix=False,
+        is_slot=False,
+        is_period=False,
+    )
+
+
 class _Slots:
 
     def __init__(self, template: str):
@@ -89,7 +98,10 @@ class _Slots:
                 # Include prefix, even if empty string.
                 self._tokens.append(
                     _Token(
-                        line_substring, is_prefix=True, is_slot=False, is_period=False
+                        line_substring,
+                        is_prefix=True,
+                        is_slot=False,
+                        is_period=False,
                     )
                 )
             else:
@@ -105,41 +117,65 @@ class _Slots:
                         )
 
     def _fill(
-        self, slot_name: str, new_value: str, error_if_no_match=True, fill_inline=True
+        self,
+        slot_name: str,
+        new_value: str,
+        error_if_no_match=True,
+        fill_inline=True,
+        require_period=False,
     ):
+        if not fill_inline and require_period:
+            raise Exception(
+                f"Unsupported: {fill_inline=}, {require_period=}"
+            )  # pragma no cover
         found_match = False
         for i in range(len(self._tokens)):
             if self._tokens[i].is_slot and self._tokens[i].string == slot_name:
+                if require_period:
+                    if i == 0 or not self._tokens[i - 1].is_period:  # pragma no cover
+                        raise Exception(f"No preceding period: {slot_name=}")
                 found_match = True
-                if fill_inline:
-                    self._tokens[i] = _Token(
-                        new_value,
-                        is_prefix=False,
-                        is_slot=False,
-                        is_period=False,
-                    )
+                if require_period and new_value is None:  # pragma no cover
+                    self._tokens[i] = _text_token("")
+                    self._tokens[i - 1] = _text_token("")
+                elif fill_inline:
+                    self._tokens[i] = _text_token(new_value)
                 else:
                     prev = self._tokens[i - 1]
                     if not prev.is_prefix:
                         raise TemplateException("expected prefix")
                     prefix = prev.string
-                    self._tokens[i] = _Token(
-                        f"\n{prefix}".join(new_value.splitlines()),
-                        is_prefix=False,
-                        is_slot=False,
-                        is_period=False,
+                    self._tokens[i] = _text_token(
+                        f"\n{prefix}".join(new_value.splitlines())
                     )
         if error_if_no_match and not found_match:
             raise TemplateException(f"no '{slot_name}' slot to fill with '{new_value}'")
 
-    def fill_inline(self, slot_name: str, new_value: str, error_if_no_match=True):
+    def fill_inline(
+        self,
+        slot_name: str,
+        new_value: str,
+        error_if_no_match=True,
+        require_period=False,
+    ):
         self._fill(
-            slot_name, new_value, error_if_no_match=error_if_no_match, fill_inline=True
+            slot_name,
+            new_value,
+            error_if_no_match=error_if_no_match,
+            require_period=require_period,
         )
 
-    def fill_block(self, slot_name: str, new_value: str, error_if_no_match=True):
+    def fill_block(
+        self,
+        slot_name: str,
+        new_value: str,
+        error_if_no_match=True,
+    ):
         self._fill(
-            slot_name, new_value, error_if_no_match=error_if_no_match, fill_inline=False
+            slot_name,
+            new_value,
+            error_if_no_match=error_if_no_match,
+            fill_inline=False,
         )
 
     def finish(self, ignore: Iterable[str] = tuple()):
