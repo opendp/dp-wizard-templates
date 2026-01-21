@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from sys import executable
 from tempfile import TemporaryDirectory
+from typing import Callable
 
 import black
 import jupytext
@@ -108,9 +109,14 @@ _default_exporter = nbconvert.HTMLExporter(
 )
 
 
+def _default_postprocess(input: str) -> str:
+    return input
+
+
 def convert_from_notebook(
     notebook_dict: dict,
     exporter: nbconvert.Exporter = _default_exporter,
+    postprocess: Callable[[str], str] = _default_postprocess,
 ) -> str:
     with warnings.catch_warnings():
         warnings.simplefilter(
@@ -119,4 +125,4 @@ def convert_from_notebook(
         notebook_node = nbformat.reads(json.dumps(notebook_dict), as_version=4)
     (body, _resources) = exporter.from_notebook_node(notebook_node)
     # TODO: Pyright thinks body is a NotebookNode, but that's not right.
-    return body  # pyright: ignore[reportReturnType]
+    return postprocess(body)  # pyright: ignore[reportReturnType]
