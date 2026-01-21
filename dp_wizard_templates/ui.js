@@ -14,6 +14,14 @@
         tags = tags.union(el_tags)
     });
 
+    const options_html = (
+        tags
+        .values()
+        .map((tag) => `<option>${tag}</option>`)
+        .toArray()
+        .join("\n")
+    ) + "<option>(none)</option>";
+
     $("main").prepend(`
         <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
             <div class="jp-Cell-inputWrapper">
@@ -24,8 +32,7 @@
                 </div>
                 <div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
                     <select>
-                        <option>Report</option>
-                        <option>(none)</option>
+                        ${options_html}
                     <select>
                 </div>
             </div>
