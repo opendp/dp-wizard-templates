@@ -201,7 +201,7 @@ class Template:
         template: str | Callable,
         root: Optional[Path] = None,
         ignore: Iterable[str] = ("TODO",),
-        strip_comments_re: Iterable[str] = (
+        strip_regexes: Iterable[str] = (
             # Not perfect, but without getting an AST
             # we can't relly tell if one of these is a comment or not.
             r"\s*#\s*type:\s*ignore\s*$",
@@ -219,6 +219,9 @@ class Template:
 
         Use `ignore` to specify all-caps strings
         which should not be treated as slots.
+
+        Use `strip_regexes` to list regexes to strip from the template.
+        By default strips `type: ignore`, `noqa:`, and `pragma: no cover`.
         """
         if root is None:
             if callable(template):
@@ -238,9 +241,9 @@ class Template:
                 self._source = f"'{template_name}'"
                 body = template_path.read_text()
 
-        for comment_re in strip_comments_re:
+        for regex in strip_regexes:
             body = re.sub(
-                comment_re,
+                regex,
                 "",
                 body,
                 flags=re.MULTILINE,
