@@ -179,7 +179,12 @@ and the values under them are the tags to show for a particular selection.
 
 >>> notebook_dict = convert_to_notebook(notebook_py, title=title, execute=True)
 >>> notebook_html = convert_from_notebook(notebook_dict)
->>> assert Path("examples/hello-world.html").read_text() == notebook_html
+>>> expected_html = Path("examples/hello-world.html").read_text()
+>>> def clean(html):
+...     # Different versions of jupyter produce slightly different HTML.
+...     import re
+...     return re.sub(r'.*<body', '<body', html, flags=re.DOTALL)
+>>> assert clean(notebook_html) == clean(expected_html)
 
 ```
 
