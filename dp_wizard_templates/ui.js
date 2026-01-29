@@ -24,9 +24,14 @@
 
     function show_only(tags) {
         const prefix = "celltag_";
-        $(`div[class*='${prefix}']`).hide();
+        // Substring match is slightly too general, but unlikely to matter.
+        // The DOM for markdown and code cells is different.
+        $(`.jp-Cell[class*="${prefix}"]`).hide();
+        $(`.jp-Cell:has([class*="${prefix}"])`).hide();
         tags.forEach((tag) => {
-            $(`div.${prefix}${tag}`).show();
+            const tag_css = `.${prefix}${tag}`;
+            $(`.jp-Cell${tag_css}`).show();
+            $(`.jp-Cell:has(${tag_css})`).show()
         });
     }
 

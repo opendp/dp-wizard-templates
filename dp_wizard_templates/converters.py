@@ -147,6 +147,6 @@ def convert_from_notebook(
             action="ignore", category=nbformat.warnings.DuplicateCellId
         )
         notebook_node = nbformat.reads(json.dumps(notebook_dict), as_version=4)
-    (body, _resources) = exporter.from_notebook_node(notebook_node)
+    body, _resources = exporter.from_notebook_node(notebook_node)
     # TODO: Pyright thinks body is a NotebookNode, but that's not right.
     return postprocess(body)  # pyright: ignore[reportReturnType]
