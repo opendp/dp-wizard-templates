@@ -201,6 +201,13 @@ class Template:
         template: str | Callable,
         root: Optional[Path] = None,
         ignore: Iterable[str] = ("TODO",),
+        strip_comments_re: Iterable[str] = (
+            # Not perfect, but without getting an AST
+            # we can't relly tell if one of these is a comment or not.
+            r"\s*#\s*type:\s*ignore\s*$",
+            r"\s*#\s*noqa:\s*\w+\s*$",
+            r"\s*#\s*pragma:\s*no cover\s*$",
+        ),
     ):
         """
         If called without `root`, either a function or
@@ -231,14 +238,7 @@ class Template:
                 self._source = f"'{template_name}'"
                 body = template_path.read_text()
 
-        comments_to_strip = [
-            # Not perfect, but without getting an AST
-            # we can't relly tell if one of these is a comment or not.
-            r"\s*#\s*type:\s*ignore\s*$",
-            r"\s*#\s*noqa:\s*\w+\s*$",
-            r"\s*#\s*pragma:\s*no cover\s*$",
-        ]
-        for comment_re in comments_to_strip:
+        for comment_re in strip_comments_re:
             body = re.sub(
                 comment_re,
                 "",
