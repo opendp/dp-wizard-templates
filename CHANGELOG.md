@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.8.2
+
+- Hide cells cleanly; RE to strip as parameter [#57](https://github.com/opendp/dp-wizard-templates/pull/57)
+- tagmap in JSON frontmatter [#56](https://github.com/opendp/dp-wizard-templates/pull/56)
+
 ## 0.8.1
 
 - support `fill_attributes` [#51](https://github.com/opendp/dp-wizard-templates/pull/51)
