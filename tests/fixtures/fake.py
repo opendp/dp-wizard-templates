@@ -10,7 +10,7 @@
 # Should be markdown (explicit)
 # -
 
-# + [markdown] tags=["my_css_class"]
+# + [markdown] tags=["unused"]
 # Should be markdown (tags)
 # -
 
@@ -22,7 +22,7 @@ print("2 + 2")
 
 # -
 
-# + tags=["my_css_class"]
+# + tags=["unused"]
 
 # Should be code (tags)
 

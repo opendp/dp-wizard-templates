@@ -7563,7 +7563,7 @@ a.anchor-link {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput celltag_my_css_class" data-mime-type="text/markdown">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput celltag_unused" data-mime-type="text/markdown">
 <p>Should be markdown (tags)</p>
 </div>
 </div>
@@ -7597,7 +7597,7 @@ a.anchor-link {
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell celltag_my_css_class" id="cell-id=bcf80899">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell celltag_unused" id="cell-id=bcf80899">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7637,65 +7637,66 @@ a.anchor-link {
 <script>// Wrap in anonymous function to avoid global pollution.
 // TODO: Convert to ESM.
 (() => {
-    const prefix = "celltag_"
-    var tags = new Set();
-    $(`div[class*='${prefix}']`).each((i, el) => {
-        const el_tags = new Set(
-            $(el)
-            .attr("class")
-            .split(" ")
-            .filter((class_name) => class_name.startsWith(prefix))
-            .map((class_name) => class_name.replace(prefix, ""))
-        );
-        tags = tags.union(el_tags)
-    });
-
-    const tag_values = tags.values().toArray().sort();
-
-    if (tag_values.length === 0) {
-        // Do not inject HTML if there will be no options:
-        return;
+    const tagmap = get_tagmap();
+    if (tagmap) {
+        insert_html(tagmap);
     }
 
-    const options_html = (
-        tag_values
-        // Don't need to escape because tag is from a class name:
-        .map((tag) => `<option value="${tag}">${tag.replaceAll("_", " ")}</option>`)
-        .join("\n")
-    ) + '<option value="">(none)</option>';  // Empty value is falsy in show_only().
+    function get_tagmap() {
+        const $first_cell = $(".jp-Cell").first();
+        var frontmatter;
+        try {
+            frontmatter = JSON.parse($first_cell.text());
+        } catch (error) {
+            console.log("No JSON frontmatter in first cell; No further processing.", error);
+            return;
+        }
+        const tagmap = frontmatter?.tagmap;
+        if (tagmap) {
+            $first_cell.remove();
+        }
+        return tagmap;
+    }
 
-    // HTML skeleton is just copy-paste from notebook source:
-    // Looks ok, but the semantics aren't correct.
-    $("main").prepend(`
-        <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
-            <div class="jp-Cell-inputWrapper">
-                <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-                </div>
-                <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-                    Show:
-                </div>
-                <div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-                    <select>
-                        ${options_html}
-                    <select>
+    function show_only(tags) {
+        const prefix = "celltag_";
+        $(`div[class*='${prefix}']`).hide();
+        tags.forEach((tag) => {
+            $(`div.${prefix}${tag}`).show();
+        });
+    }
+
+    function insert_html(tagmap) {
+        const $select = $("<select>");
+        const delim = "|";
+        Object.entries(tagmap).forEach(([label, tags]) => {
+            $select.append($("<option>", {value: tags.join(delim)}).text(label));
+        });
+
+        // HTML skeleton is just copy-paste from notebook source:
+        // Looks ok, but the semantics aren't correct.
+        $("main").prepend(`
+            <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+                <div class="jp-Cell-inputWrapper">
+                    <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+                    </div>
+                    <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+                        Show:
+                    </div>
+                    <div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+                        <select>${$select.html()}</select>
+                    </div>
                 </div>
             </div>
-        </div>
-    `);
+        `);
 
-    function show_only(tag) {
-        $(`div[class*='${prefix}']`).hide();
-        if (tag) {
-            $(`div.${prefix}${tag}`).show();
-        }
+        const default_tags = Object.values(tagmap)[0];
+        show_only(default_tags);
+
+        $("select").on("change", (event) => {
+            const tags = event.target.value.split(delim);
+            show_only(tags);
+        })
     }
-
-    const default_tag = tag_values[0];
-    show_only(default_tag);
-
-    $("select").on("change", (event) => {
-        const tag = event.target.value;
-        show_only(tag);
-    })
 })();</script>
 </html>

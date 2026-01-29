@@ -32,8 +32,9 @@
 
     function insert_html(tagmap) {
         const $select = $("<select>");
+        const delim = "|";
         Object.entries(tagmap).forEach(([label, tags]) => {
-            $select.append($("<option>", {value: tags.join("|")}).text(label));
+            $select.append($("<option>", {value: tags.join(delim)}).text(label));
         });
 
         // HTML skeleton is just copy-paste from notebook source:
@@ -57,7 +58,7 @@
         show_only(default_tags);
 
         $("select").on("change", (event) => {
-            const tags = event.target.value.split("|");
+            const tags = event.target.value.split(delim);
             show_only(tags);
         })
     }
