@@ -132,10 +132,11 @@ format](https://jupytext.readthedocs.io/en/latest/formats-scripts.html#the-light
 Contiguous comments are coverted to markdown cells,
 and contiguous lines of code are converted to code cells.
 
-If tag metadata is included, the tags will be collected into a select element,
-with the first tag value, sorted alphabetically, selected by default.
-This allows the user to toggle between a brief report and a full tutorial,
-for example.
+If the first cell is a JSON object with the key `tagmap`,
+it is used to generate a selector which can show or hide cells with particular tags.
+The keys under `tagmap` will be used as options,
+and the values under them are the tags to show for a particular selection.
+(By default, cells with tags will be hidden.)
 
 ```python
 >>> from dp_wizard_templates.converters import (
@@ -144,7 +145,16 @@ for example.
 ... )
 
 >>> def notebook_template(TITLE, BLOCK, FUNCTION_NAME):
-...     # + [markdown] tags=["Introduction"]
+...     # {"tagmap":{
+...     #   "Both": ["intro", "code"],
+...     #   "Introduction": ["intro"],
+...     #   "Code": ["code"],
+...     #   "Neither": []
+...     # }}
+...
+...     # (Untagged cells will always be shown.)
+...
+...     # + [markdown] tags=["intro"]
 ...     # # TITLE
 ...     #
 ...     # Comments will be rendered as *Markdown*.
@@ -152,7 +162,7 @@ for example.
 ...     # even though the lines are not contiguous
 ...     # -
 ...
-...     # +
+...     # + tags=["code"]
 ...     BLOCK
 ...
 ...     FUNCTION_NAME(-10)
@@ -169,7 +179,12 @@ for example.
 
 >>> notebook_dict = convert_to_notebook(notebook_py, title=title, execute=True)
 >>> notebook_html = convert_from_notebook(notebook_dict)
->>> assert Path("examples/hello-world.html").read_text() == notebook_html
+>>> expected_html = Path("examples/hello-world.html").read_text()
+>>> def clean(html):
+...     # Different versions of jupyter produce slightly different HTML.
+...     import re
+...     return re.sub(r'.*<body', '<body', html, flags=re.DOTALL)
+>>> assert clean(notebook_html) == clean(expected_html)
 
 ```
 

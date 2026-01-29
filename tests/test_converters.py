@@ -59,8 +59,14 @@ def test_convert_notebook_to_html():
     assert "[1]:" in actual_html
     assert "<pre>4" in actual_html
 
+    def clean(html):
+        # Different versions of jupyter produce slightly different HTML.
+        import re
+
+        return re.sub(r".*<body", "<body", html, flags=re.DOTALL)
+
     expected_html = (fixtures_path / "expected-fake-executed.html").read_text()
-    assert actual_html == expected_html
+    assert clean(actual_html) == clean(expected_html)
 
 
 def test_convert_notebook_to_markdown():
