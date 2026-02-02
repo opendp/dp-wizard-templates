@@ -12,13 +12,15 @@
         try {
             frontmatter = JSON.parse($first_cell.text());
         } catch (error) {
-            console.log("No JSON frontmatter in first cell; No further processing.", error);
+            console.warn("First cell can not be parsed as JSON; No further processing.", error);
             return;
         }
         const tagmap = frontmatter?.tagmap;
-        if (tagmap) {
-            $first_cell.remove();
+        if (! tagmap) {
+            console.warn("No 'tagmap' in JSON frontmatter; No forther processing.", frontmatter);
+            return;
         }
+        $first_cell.remove();
         return tagmap;
     }
 
