@@ -1,8 +1,10 @@
 // Wrap in anonymous function to avoid global pollution.
 // TODO: Convert to ESM.
 (() => {
+    const prefix = "celltag_";
     const tagmap = get_tagmap();
     if (tagmap) {
+        validate_tags(tagmap);
         insert_html(tagmap);
     }
 
@@ -24,10 +26,41 @@
         return tagmap;
     }
 
+    function validate_tags(tagmap) {
+        var tags_in_tagmap = new Set();
+        Object.values(tagmap).forEach((tags) => {
+            tags.forEach((tag) => {
+                tags_in_tagmap.add(tag)
+            })
+        });
+        var tags_on_cells = new Set();
+        $(`div[class*='${prefix}']`).each((i, el) => {
+            $(el)
+                .attr("class")
+                .split(" ")
+                .filter((class_name) => class_name.startsWith(prefix))
+                .map((class_name) => class_name.replace(prefix, ""))
+                .forEach((tag) => {
+                    tags_on_cells.add(tag);
+                });
+        });
+        // Latest JS standard has more Set methods,
+        // but this has wider browser support.
+        // TODO: better solution.
+        const tagmap_string = Array.from(tags_in_tagmap).sort().join(", ")
+        const cells_string = Array.from(tags_on_cells).sort().join(", ")
+        if (tagmap_string !== cells_string) {
+            console.warn(
+                "Check for tag typos.\nIn tagmap:", tagmap_string,
+                "\nOn cells:", cells_string,
+            );
+        }
+    }
+
     function show_only(tags) {
-        const prefix = "celltag_";
-        // Substring match is slightly too general, but unlikely to matter.
-        // The DOM for markdown and code cells is different.
+        // Substring match ("*=")is slightly too general, but unlikely to matter.
+        // The DOM for markdown and code cells is different:
+        // Markdown cells are deeply nested, so we use ":has()".
         $(`.jp-Cell[class*="${prefix}"]`).hide();
         $(`.jp-Cell:has([class*="${prefix}"])`).hide();
         tags.forEach((tag) => {
