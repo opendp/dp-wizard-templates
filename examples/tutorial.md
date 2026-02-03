@@ -154,19 +154,19 @@ and the values under them are the tags to show for a particular selection.
 ...
 ...     # (Untagged cells will always be shown.)
 ...
-...     # + [markdown] tags=["intro"]
+...     # + [markdown] <intro>
 ...     # # TITLE
 ...     #
 ...     # Comments will be rendered as *Markdown*.
 ...     # The `+` and `-` below ensure that only one code cell is produced,
 ...     # even though the lines are not contiguous
-...     # -
+...     # - </intro>
 ...
-...     # + tags=["code"]
+...     # + <code>
 ...     BLOCK
 ...
 ...     FUNCTION_NAME(-10)
-...     # -
+...     # - </code>
 
 
 >>> title = "Hello World!"

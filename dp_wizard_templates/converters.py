@@ -139,12 +139,14 @@ def _translate_tags(python_str: str) -> str:
     >>> _translate_tags('# + <tag>\\n# + <tag>')
     Traceback (most recent call last):
     ...
-    dp_wizard_templates.converters.ParseException: Line 1: Tag already open. current_tags={'tag'} & new_tags={'tag'} == {'tag'}
+    dp_wizard_templates.converters.ParseException: Line 1: Tag already open.
+    current_tags={'tag'} & new_tags={'tag'} == {'tag'}
 
     >>> _translate_tags('# - </tag>')
     Traceback (most recent call last):
     ...
-    dp_wizard_templates.converters.ParseException: Line 0: Closing tag not already open. old_tags={'tag'} - current_tags=set() == {'tag'}
+    dp_wizard_templates.converters.ParseException: Line 0: Tag already closed.
+    old_tags={'tag'} - current_tags=set() == {'tag'}
     """
     old_lines = python_str.splitlines()
     new_lines = []
@@ -154,7 +156,7 @@ def _translate_tags(python_str: str) -> str:
             new_tags = _extract_tags(m.group(2))
             if intersection := current_tags & new_tags:
                 raise ParseException(
-                    f"Line {i}: Tag already open. "
+                    f"Line {i}: Tag already open.\n"
                     f"{current_tags=} & {new_tags=} == {intersection}"
                 )
             current_tags |= new_tags
@@ -165,7 +167,7 @@ def _translate_tags(python_str: str) -> str:
             old_tags = _extract_tags(m.group(2))
             if difference := old_tags - current_tags:
                 raise ParseException(
-                    f"Line {i}: Closing tag not already open. "
+                    f"Line {i}: Tag already closed.\n"
                     f"{old_tags=} - {current_tags=} == {difference}"
                 )
             current_tags -= old_tags
