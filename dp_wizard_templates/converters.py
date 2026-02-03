@@ -1,5 +1,6 @@
 import hashlib
 import json
+import re
 import subprocess
 import warnings
 from dataclasses import dataclass
@@ -33,6 +34,10 @@ class ConversionException(Exception):
         return f"Script to notebook conversion failed: {self.command}\n{self.stderr})"
 
 
+class ParseException(Exception):
+    pass
+
+
 def convert_to_notebook(
     python_str: str, title: str, execute: bool = False, reformat: bool = True
 ) -> dict:
@@ -54,6 +59,7 @@ def convert_to_notebook(
         if reformat:
             # Line length determined by PDF rendering.
             python_str = black.format_str(python_str, mode=black.Mode(line_length=74))
+        python_str = _translate_tags(python_str)
         py_path.write_text(python_str)
 
         # TODO: Use an API instead the the CLI.
@@ -76,6 +82,98 @@ def convert_to_notebook(
     nb_dict = json.loads(result.stdout.strip())
     nb_dict["metadata"]["title"] = title
     return _clean_nb(nb_dict)
+
+
+def _extract_tags(bracket_str: str) -> set[str]:
+    """
+    >>> sorted(_extract_tags("  <a><hello> <world>  "))
+    ['a', 'hello', 'world']
+
+    >>> sorted(_extract_tags("  "))
+    []
+
+    """
+    return set(tag for tag in re.split(r"\W+", bracket_str) if tag)
+
+
+def _strip_trailing_ws(orig: str) -> str:
+    return re.sub(r"\s+$", "", orig)
+
+
+def _translate_tags(python_str: str) -> str:
+    """
+    >>> print(_translate_tags('''# + [markdown] <tag>
+    ... just open...
+    ... # -
+    ... # +
+    ... still open...
+    ... # - </tag>
+    ... # +
+    ... not open
+    ... # -
+    ... '''))
+    # + [markdown]  tags=["tag"]
+    just open...
+    # -
+    # + tags=["tag"]
+    still open...
+    # -
+    # +
+    not open
+    # -
+
+    >>> print(_translate_tags('''# + <tag>
+    ... open-close!
+    ... # - </tag>
+    ... # +
+    ... no tags!
+    ... # -
+    ... '''))
+    # +  tags=["tag"]
+    open-close!
+    # -
+    # +
+    no tags!
+    # -
+
+    >>> _translate_tags('# + <tag>\\n# + <tag>')
+    Traceback (most recent call last):
+    ...
+    dp_wizard_templates.converters.ParseException: Line 1: Tag already open. current_tags={'tag'} & new_tags={'tag'} == {'tag'}
+
+    >>> _translate_tags('# - </tag>')
+    Traceback (most recent call last):
+    ...
+    dp_wizard_templates.converters.ParseException: Line 0: Closing tag not already open. old_tags={'tag'} - current_tags=set() == {'tag'}
+    """
+    old_lines = python_str.splitlines()
+    new_lines = []
+    current_tags = set()
+    for i, line in enumerate(old_lines):
+        if m := re.match(r"^(\s*#\s*\+\s*(?:\[markdown\])?\s*)((?:<\w+>\s*)*)$", line):
+            new_tags = _extract_tags(m.group(2))
+            if intersection := current_tags & new_tags:
+                raise ParseException(
+                    f"Line {i}: Tag already open. "
+                    f"{current_tags=} & {new_tags=} == {intersection}"
+                )
+            current_tags |= new_tags
+            tag_metadata = ",".join(f'"{t}"' for t in current_tags)
+            suffix = f" tags=[{tag_metadata}]" if tag_metadata else ""
+            new_lines.append(_strip_trailing_ws(f"{m.group(1)}{suffix}"))
+        elif m := re.match(r"^(\s*#\s*-\s*)((?:</\w+>\s*)+)$", line):
+            old_tags = _extract_tags(m.group(2))
+            if difference := old_tags - current_tags:
+                raise ParseException(
+                    f"Line {i}: Closing tag not already open. "
+                    f"{old_tags=} - {current_tags=} == {difference}"
+                )
+            current_tags -= old_tags
+            new_lines.append(_strip_trailing_ws(m.group(1)))
+        else:
+            new_lines.append(line)
+
+    return "\n".join(new_lines)
 
 
 def _stable_hash(lines: list[str]) -> str:
