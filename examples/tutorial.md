@@ -6,9 +6,6 @@ DP Wizard Templates helps you build Python code from templates
 which are themselves syntactically valid Python.
 Templates can be composed to generate entire notebooks.
 
-DP Wizard Templates relies on code inspection, so real working examples
-need to be in code, not in a notebook or a doctest.
-
 DP Wizard Templates was developed for
 [DP Wizard](https://github.com/opendp/dp-wizard),
 and that codebase remains a good place to look for further examples.
@@ -132,9 +129,9 @@ format](https://jupytext.readthedocs.io/en/latest/formats-scripts.html#the-light
 Contiguous comments are coverted to markdown cells,
 and contiguous lines of code are converted to code cells.
 
-If the first cell is a JSON object with the key `tagmap`,
+If the first cell is a JSON object with the key `tag_map`,
 it is used to generate a selector which can show or hide cells with particular tags.
-The keys under `tagmap` will be used as options,
+The keys under `tag_map` will be used as options,
 and the values under them are the tags to show for a particular selection.
 (By default, cells with tags will be hidden.)
 
@@ -145,12 +142,18 @@ and the values under them are the tags to show for a particular selection.
 ... )
 
 >>> def notebook_template(TITLE, BLOCK, FUNCTION_NAME):
-...     # {"tagmap":{
-...     #   "Both": ["intro", "code"],
-...     #   "Introduction": ["intro"],
-...     #   "Code": ["code"],
-...     #   "Neither": []
-...     # }}
+...     # {
+...     #   "tag_map": {
+...     #     "Both": ["intro", "code"],
+...     #     "Introduction": ["intro"],
+...     #     "Code": ["code"],
+...     #     "Neither": []
+...     #   },
+...     #   "css_map": {
+...     #     "intro": "background: lightblue;",
+...     #     "code": "background: lightgrey;"
+...     #   }
+...     # }
 ...
 ...     # (Untagged cells will always be shown.)
 ...
@@ -179,16 +182,17 @@ and the values under them are the tags to show for a particular selection.
 
 >>> notebook_dict = convert_to_notebook(notebook_py, title=title, execute=True)
 >>> notebook_html = convert_from_notebook(notebook_dict)
->>> expected_html = Path("examples/hello-world.html").read_text()
+>>> _ = Path("examples/actual-hello-world.html").write_text(notebook_html)
+>>> expected_html = Path("examples/expected-hello-world.html").read_text()
 >>> def clean(html):
-...     # Different versions of jupyter produce slightly different HTML.
+...     # Different versions of Jupyter produce slightly different HTML.
 ...     import re
 ...     return re.sub(r'.*<body', '<body', html, flags=re.DOTALL)
 >>> assert clean(notebook_html) == clean(expected_html)
 
 ```
 
-The [output](examples/hello-world.html) is short,
+The [output](examples/expected-hello-world.html) is short,
 but it is an end-to-end demonstration of DP Wizard Templates.
 
 ## Last thoughts

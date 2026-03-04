@@ -2,13 +2,12 @@
 // TODO: Convert to ESM.
 (() => {
     const prefix = "celltag_";
-    const tagmap = get_tagmap();
-    if (tagmap) {
-        validate_tags(tagmap);
-        insert_html(tagmap);
-    }
+    const [tag_map, css_map] = get_maps();
+    validate_tags(tag_map);
+    insert_html(tag_map);
+    insert_css(css_map);
 
-    function get_tagmap() {
+    function get_maps() {
         const $first_cell = $(".jp-Cell").first();
         var frontmatter;
         try {
@@ -17,20 +16,21 @@
             console.warn("First cell can not be parsed as JSON; No further processing.", error);
             return;
         }
-        const tagmap = frontmatter?.tagmap;
-        if (! tagmap) {
-            console.warn("No 'tagmap' in JSON frontmatter; No forther processing.", frontmatter);
+        const tag_map = frontmatter?.tag_map;
+        const css_map = frontmatter?.css_map;
+        if (! (tag_map && css_map)) {
+            console.warn("JSON frontmatter missing required elements; No forther processing.", frontmatter);
             return;
         }
         $first_cell.remove();
-        return tagmap;
+        return [tag_map, css_map];
     }
 
-    function validate_tags(tagmap) {
-        var tags_in_tagmap = new Set();
-        Object.values(tagmap).forEach((tags) => {
+    function validate_tags(tag_map) {
+        var tags_in_tag_map = new Set();
+        Object.values(tag_map).forEach((tags) => {
             tags.forEach((tag) => {
-                tags_in_tagmap.add(tag)
+                tags_in_tag_map.add(tag)
             })
         });
         var tags_on_cells = new Set();
@@ -47,11 +47,11 @@
         // Latest JS standard has more Set methods,
         // but this has wider browser support.
         // TODO: better solution.
-        const tagmap_string = Array.from(tags_in_tagmap).sort().join(", ")
+        const tag_map_string = Array.from(tags_in_tag_map).sort().join(", ")
         const cells_string = Array.from(tags_on_cells).sort().join(", ")
-        if (tagmap_string !== cells_string) {
+        if (tag_map_string !== cells_string) {
             console.warn(
-                "Check for tag typos.\nIn tagmap:", tagmap_string,
+                "Check for tag typos.\nIn tag_map:", tag_map_string,
                 "\nOn cells:", cells_string,
             );
         }
@@ -70,10 +70,10 @@
         });
     }
 
-    function insert_html(tagmap) {
+    function insert_html(tag_map) {
         const $select = $("<select>");
         const delim = "|";
-        Object.entries(tagmap).forEach(([label, tags]) => {
+        Object.entries(tag_map).forEach(([label, tags]) => {
             $select.append($("<option>", {value: tags.join(delim)}).text(label));
         });
 
@@ -94,12 +94,20 @@
             </div>
         `);
 
-        const default_tags = Object.values(tagmap)[0];
+        const default_tags = Object.values(tag_map)[0];
         show_only(default_tags);
 
         $("select").on("change", (event) => {
             const tags = event.target.value.split(delim);
             show_only(tags);
         })
+    }
+
+    function insert_css(css_map) {
+        const rules = Object.entries(css_map).map(
+            ([tag, css]) =>
+                `.jp-Cell:has(.celltag_${tag}), .celltag_${tag} {${css}}`
+        );
+        $("head").append(`<style>${rules.join("\n")}</style>`);
     }
 })();
