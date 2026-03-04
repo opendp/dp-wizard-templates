@@ -66,7 +66,9 @@ def test_convert_notebook_to_html():
         return re.sub(r".*<body", "<body", html, flags=re.DOTALL)
 
     expected_html = (fixtures_path / "expected-fake-executed.html").read_text()
-    assert clean(actual_html) == clean(expected_html)
+    # Diff in test output is hard to read, so pull comparison out of assert:
+    is_match = clean(actual_html) == clean(expected_html)
+    assert is_match, f"diff {fixtures_path}/{{actual,expected}}-fake-executed.html"
 
 
 def test_convert_notebook_to_markdown():

@@ -7796,18 +7796,24 @@ a.anchor-link {
 <!-- End of mermaid configuration --></head>
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
 <main>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=18fc9e55">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=0d9c652f">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>{"tag_map":{
+<p>{
+"tag_map": {
 "Both": ["intro", "code"],
 "Introduction": ["intro"],
 "Code": ["code"],
 "Neither": []
-}}</p>
+},
+"css_map": {
+"intro": "background: lightblue;",
+"code": "background: lightgrey;"
+}
+}</p>
 </div>
 </div>
 </div>
@@ -7882,13 +7888,12 @@ even though the lines are not contiguous</p>
 // TODO: Convert to ESM.
 (() => {
     const prefix = "celltag_";
-    const tag_map = get_maps();
-    if (tag_map) {
-        validate_tags(tag_map);
-        insert_html(tag_map);
-    }
+    const [tag_map, css_map] = get_maps();
+    validate_tags(tag_map);
+    insert_html(tag_map);
+    insert_css(css_map);
 
-    function get_tag_map() {
+    function get_maps() {
         const $first_cell = $(".jp-Cell").first();
         var frontmatter;
         try {
@@ -7898,12 +7903,13 @@ even though the lines are not contiguous</p>
             return;
         }
         const tag_map = frontmatter?.tag_map;
-        if (! tag_map) {
-            console.warn("No 'tag_map' in JSON frontmatter; No forther processing.", frontmatter);
+        const css_map = frontmatter?.css_map;
+        if (! (tag_map && css_map)) {
+            console.warn("JSON frontmatter missing required elements; No forther processing.", frontmatter);
             return;
         }
         $first_cell.remove();
-        return tag_map;
+        return [tag_map, css_map];
     }
 
     function validate_tags(tag_map) {
@@ -7981,6 +7987,14 @@ even though the lines are not contiguous</p>
             const tags = event.target.value.split(delim);
             show_only(tags);
         })
+    }
+
+    function insert_css(css_map) {
+        const rules = Object.entries(css_map).map(
+            ([tag, css]) =>
+                `.jp-Cell:has(.celltag_${tag}), .celltag_${tag} {${css}}`
+        );
+        $("head").append(`<style>${rules.join("\n")}</style>`);
     }
 })();</script>
 </html>
