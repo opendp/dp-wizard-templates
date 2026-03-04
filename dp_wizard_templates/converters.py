@@ -250,3 +250,14 @@ def convert_from_notebook(
     body, _resources = exporter.from_notebook_node(notebook_node)
     # TODO: Pyright thinks body is a NotebookNode, but that's not right.
     return postprocess(body)  # pyright: ignore[reportReturnType]
+
+
+def clean_notebook(
+    notebook_dict: dict,
+) -> str:
+    """
+    Strip JSON frontmatter cell, and return the rest of the notebook
+    as a single string of JSON
+    """
+    # TODO: do something!
+    return json.dumps(notebook_dict, indent=1)

@@ -7,6 +7,7 @@ import pytest
 
 from dp_wizard_templates.converters import (
     ConversionException,
+    clean_notebook,
     convert_from_notebook,
     convert_to_notebook,
 )
@@ -42,7 +43,7 @@ def test_convert_python_to_notebook():
 def test_convert_python_to_notebook_execute():
     python_str = (fixtures_path / "fake.py").read_text()
     actual_nb_dict = convert_to_notebook(python_str, "Title!", execute=True)
-    actual_nb_json_str = json.dumps(actual_nb_dict, indent=1)
+    actual_nb_json_str = clean_notebook(actual_nb_dict)
     (fixtures_path / "actual-fake-executed.ipynb").write_text(actual_nb_json_str)
     expected_nb_json_str = (fixtures_path / "expected-fake-executed.ipynb").read_text()
 
