@@ -1,3 +1,5 @@
+# {"JSON frontmatter removed": true}
+
 # `pip install` output should be stripped:
 
 # +

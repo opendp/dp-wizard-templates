@@ -31,7 +31,7 @@ def norm_notebook_json(nb_json_str):
 def test_convert_python_to_notebook():
     python_str = (fixtures_path / "fake.py").read_text()
     actual_nb_dict = convert_to_notebook(python_str, "Title!")
-    actual_nb_json_str = json.dumps(actual_nb_dict)
+    actual_nb_json_str = clean_notebook(actual_nb_dict)
     (fixtures_path / "actual-fake.ipynb").write_text(actual_nb_json_str)
     expected_nb_json_str = (fixtures_path / "expected-fake.ipynb").read_text()
 
