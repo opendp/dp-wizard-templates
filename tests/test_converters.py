@@ -28,6 +28,18 @@ def norm_notebook_json(nb_json_str):
     return nb_json_str
 
 
+def test_clean_notebook_no_json_frontmatter():
+    with pytest.warns(UserWarning, match=r"First cell did not parse as JSON"):
+        json_str = clean_notebook({"cells": [{"source": ["not json"]}]})
+    assert json_str.startswith('{\n "cells":')
+
+
+def test_clean_notebook_no_dict_frontmatter():
+    with pytest.warns(UserWarning, match=r"First cell parsed as JSON, but not dict"):
+        json_str = clean_notebook({"cells": [{"source": ['"json string, not dict"']}]})
+    assert json_str.startswith('{\n "cells":')
+
+
 def test_convert_python_to_notebook():
     python_str = (fixtures_path / "fake.py").read_text()
     actual_nb_dict = convert_to_notebook(python_str, "Title!")
