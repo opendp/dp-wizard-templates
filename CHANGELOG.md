@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.9.0
+
+- Hide json frontmatter [#65](https://github.com/opendp/dp-wizard-templates/pull/65)
+- User can specify css for cells with particular tags [#64](https://github.com/opendp/dp-wizard-templates/pull/64)
+- Easier to use tag syntax, and better input validation [#61](https://github.com/opendp/dp-wizard-templates/pull/61)
+
 ## 0.8.2
 
 - Hide cells cleanly; RE to strip as parameter [#57](https://github.com/opendp/dp-wizard-templates/pull/57)
