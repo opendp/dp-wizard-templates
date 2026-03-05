@@ -8,6 +8,7 @@ from pathlib import Path
 from sys import executable
 from tempfile import TemporaryDirectory
 from typing import Callable
+from warnings import warn
 
 import black
 import jupytext
@@ -250,3 +251,24 @@ def convert_from_notebook(
     body, _resources = exporter.from_notebook_node(notebook_node)
     # TODO: Pyright thinks body is a NotebookNode, but that's not right.
     return postprocess(body)  # pyright: ignore[reportReturnType]
+
+
+def clean_notebook(
+    notebook_dict: dict,
+) -> str:
+    """
+    Strip JSON frontmatter cell, and return the rest of the notebook
+    as a single string of JSON
+    """
+    first_cell_source = "\n".join(notebook_dict["cells"][0]["source"])
+    try:
+        first_cell_decoded = json.loads(first_cell_source)
+    except json.decoder.JSONDecodeError as e:
+        warn(f"First cell did not parse as JSON:\n{first_cell_source}\n{e}")
+        return json.dumps(notebook_dict, indent=1)
+    if not isinstance(first_cell_decoded, dict):
+        warn(f"First cell parsed as JSON, but not dict:\n{first_cell_decoded}")
+        return json.dumps(notebook_dict, indent=1)
+
+    notebook_dict["cells"].pop(0)
+    return json.dumps(notebook_dict, indent=1)

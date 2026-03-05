@@ -7,6 +7,7 @@ import pytest
 
 from dp_wizard_templates.converters import (
     ConversionException,
+    clean_notebook,
     convert_from_notebook,
     convert_to_notebook,
 )
@@ -27,10 +28,22 @@ def norm_notebook_json(nb_json_str):
     return nb_json_str
 
 
+def test_clean_notebook_no_json_frontmatter():
+    with pytest.warns(UserWarning, match=r"First cell did not parse as JSON"):
+        json_str = clean_notebook({"cells": [{"source": ["not json"]}]})
+    assert json_str.startswith('{\n "cells":')
+
+
+def test_clean_notebook_no_dict_frontmatter():
+    with pytest.warns(UserWarning, match=r"First cell parsed as JSON, but not dict"):
+        json_str = clean_notebook({"cells": [{"source": ['"json string, not dict"']}]})
+    assert json_str.startswith('{\n "cells":')
+
+
 def test_convert_python_to_notebook():
     python_str = (fixtures_path / "fake.py").read_text()
     actual_nb_dict = convert_to_notebook(python_str, "Title!")
-    actual_nb_json_str = json.dumps(actual_nb_dict)
+    actual_nb_json_str = clean_notebook(actual_nb_dict)
     (fixtures_path / "actual-fake.ipynb").write_text(actual_nb_json_str)
     expected_nb_json_str = (fixtures_path / "expected-fake.ipynb").read_text()
 
@@ -42,7 +55,7 @@ def test_convert_python_to_notebook():
 def test_convert_python_to_notebook_execute():
     python_str = (fixtures_path / "fake.py").read_text()
     actual_nb_dict = convert_to_notebook(python_str, "Title!", execute=True)
-    actual_nb_json_str = json.dumps(actual_nb_dict, indent=1)
+    actual_nb_json_str = clean_notebook(actual_nb_dict)
     (fixtures_path / "actual-fake-executed.ipynb").write_text(actual_nb_json_str)
     expected_nb_json_str = (fixtures_path / "expected-fake-executed.ipynb").read_text()
 
