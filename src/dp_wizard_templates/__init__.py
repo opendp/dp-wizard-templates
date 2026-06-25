@@ -1,5 +1,5 @@
 """
-.. include:: ../examples/tutorial.md
+.. include:: ../../examples/tutorial.md
 """
 
 from importlib.metadata import version
