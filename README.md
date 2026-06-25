@@ -12,25 +12,16 @@ See the [documentation](https://opendp.github.io/dp-wizard-templates) for more i
 
 ### Getting Started
 
-On MacOS:
 ```shell
 $ git clone https://github.com/opendp/dp-wizard-templates.git
 $ cd dp-wizard-templates
-$ brew install python@3.10
-$ python3.10 -m venv .venv
-$ source .venv/bin/activate
-```
-
-You can now install dependencies:
-```shell
-$ pip install -r requirements-dev.txt
-$ pre-commit install
-$ flit install
+$ pip install uv # if not already installed
+$ uv sync
 ```
 
 Tests should pass, and code coverage should be complete (except blocks we explicitly ignore):
 ```shell
-$ scripts/ci.sh
+$ uv run scripts/ci.sh
 ```
 
 ### Release
