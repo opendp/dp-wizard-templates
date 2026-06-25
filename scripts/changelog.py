@@ -7,10 +7,6 @@ from pathlib import Path
 root_path = Path(__file__).parent.parent
 
 
-def get_prev_version():  # pragma: no cover
-    return version("dp_wizard_templates")
-
-
 def log_until(match):  # pragma: no cover
     lines = subprocess.check_output(["git", "log", "--oneline"], text=True).splitlines()
     if match is None:
@@ -49,7 +45,7 @@ def main():  # pragma: no cover
     old_changelog_lines = (root_path / "CHANGELOG.md").read_text().splitlines()
     new_changelog_lines = []
 
-    prev_version = get_prev_version()
+    prev_version = version("dp_wizard_templates")
     log_lines = log_until(prev_version)
     changelog_update = parse_log(log_lines)
 
