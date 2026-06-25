@@ -7,7 +7,7 @@ from pathlib import Path
 root_path = Path(__file__).parent.parent
 
 
-def get_prev_version():
+def get_prev_version():  # pragma: no cover
     return version("dp_wizard_templates")
 
 
