@@ -15,5 +15,3 @@ pytest
 pyright
 pytest-cov
 
-# App dependencies:
--r requirements.in
