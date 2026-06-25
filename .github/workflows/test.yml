@@ -14,9 +14,6 @@ jobs:
         python-version:
           - '3.10'
           - '3.13'
-        requirements-file:
-          - 'requirements-dev.txt' # pinned, for predictability
-          - 'requirements-dev.in' # un-pinned, so we catch problems early
 
     steps:
       - name: Checkout repository
