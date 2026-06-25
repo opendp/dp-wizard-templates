@@ -1,3 +1,7 @@
+[build-system]
+requires = ["uv_build>=0.11.24,<0.12"]
+build-backend = "uv_build"
+
 [project]
 name = "dp_wizard_templates"
 authors = [{name = "The OpenDP Project", email = "contact@opendp.org"}]

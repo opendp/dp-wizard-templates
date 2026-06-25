@@ -386,7 +386,7 @@ wheels = [
 [[package]]
 name = "dp-wizard-templates"
 version = "0.9.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "black" },
     { name = "ipykernel" },
@@ -419,7 +419,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "dp-wizard-templates", virtual = "." },
+    { name = "dp-wizard-templates", editable = "." },
     { name = "flake8", specifier = ">=7.3.0" },
     { name = "flake8-bugbear", specifier = ">=25.11.29" },
     { name = "isort", specifier = ">=8.0.1" },

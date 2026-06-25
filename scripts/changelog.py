@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
 import re
 import subprocess
+from importlib.metadata import version
 from pathlib import Path
 
 root_path = Path(__file__).parent.parent
 
 
 def get_prev_version():
-    """
-    >>> len(get_prev_version().splitlines())
-    1
-    """
-    return (root_path / "dp_wizard_templates" / "VERSION").read_text().strip()
+    return version("dp_wizard_templates")
 
 
 def log_until(match):  # pragma: no cover
