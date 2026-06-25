@@ -13,8 +13,7 @@ jobs:
       matrix:
         python-version:
           - '3.11'
-          # TODO: Test intermediate versions.
-          # - '3.12'
+          - '3.12'
           - '3.13'
 
     steps:
