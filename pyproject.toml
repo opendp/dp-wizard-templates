@@ -25,8 +25,17 @@ ignore = ["examples/", "docs/"]
 [tool.isort]
 profile = "black"
 
+[tool.uv.workspace]
+members = [
+    ".",
+]
+
+[tool.uv.sources]
+dp-wizard-templates = { workspace = true, editable = true }
+
 [dependency-groups]
 dev = [
+    "dp-wizard-templates",
     "flake8>=7.3.0",
     "flake8-bugbear>=25.11.29",
     "isort>=8.0.1",

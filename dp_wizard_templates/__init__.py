@@ -2,6 +2,6 @@
 .. include:: ../examples/tutorial.md
 """
 
-from pathlib import Path
+from importlib.metadata import version
 
-__version__ = (Path(__file__).parent / "VERSION").read_text().strip()
+__version__ = version("dp_wizard_templates")

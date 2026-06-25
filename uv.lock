@@ -397,6 +397,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "dp-wizard-templates" },
     { name = "flake8" },
     { name = "flake8-bugbear" },
     { name = "isort" },
@@ -418,6 +419,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "dp-wizard-templates", virtual = "." },
     { name = "flake8", specifier = ">=7.3.0" },
     { name = "flake8-bugbear", specifier = ">=25.11.29" },
     { name = "isort", specifier = ">=8.0.1" },
