@@ -24,13 +24,17 @@ Tests should pass, and code coverage should be complete (except blocks we explic
 $ uv run scripts/ci.sh
 ```
 
+Docs can be previewed locally:
+```shell
+$ uv run scripts/docs.sh
+```
+
 ### Release
 
-- Make sure you're up to date, and have the git-ignored credentials file `.pypirc`.
 - Make one last feature branch with the new version number in the name:
-  - Run `scripts/changelog.py` to update the `CHANGELOG.md`.
+  - Run `uv run scripts/changelog.py` to update the `CHANGELOG.md`.
   - Review the updates and pull a couple highlights to the top.
-  - Bump `dp_wizard/VERSION`, and add the new number at the top of the `CHANGELOG.md`.
+  - `uv version --bump minor`, and add the new number at the top of the `CHANGELOG.md`.
   - Commit your changes, make a PR, and merge this branch to main.
 - Update `main` with the latest changes: `git checkout main; git pull`
-- Publish: `flit publish --pypirc .pypirc`
+- With `~/.pypirc` in place, run `uvx uv-publish`.
