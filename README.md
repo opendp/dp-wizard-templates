@@ -17,6 +17,7 @@ $ git clone https://github.com/opendp/dp-wizard-templates.git
 $ cd dp-wizard-templates
 $ pip install uv # if not already installed
 $ uv sync
+$ uv run pre-commit install
 ```
 
 Tests should pass, and code coverage should be complete (except blocks we explicitly ignore):
